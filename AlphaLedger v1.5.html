@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en" id="app-root" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="meta-title">AlphaLedger v1.5</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .active-nav { background-color: #374151; color: #fff; }
+        html.lang-kh { font-size: 0.88rem; }
+        @media (max-width: 640px) {
+            html.lang-kh { font-size: 0.8rem; }
+        }
+        html.lang-kh h1 { font-size: 1.15rem; }
+        html.lang-kh h3 { font-size: 1rem; }
+        html.lang-kh table { font-size: 0.75rem; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 transition-colors duration-200 font-sans antialiased text-xs sm:text-sm">
+
+    <nav class="bg-gray-800 border-b border-gray-700 px-4 sm:px-6 py-3 sm:py-4 relative transition-all duration-300">
+        <div class="max-w-[1600px] mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div id="user-avatar-frame" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500 border border-emerald-400 flex items-center justify-center text-base sm:text-lg overflow-hidden shadow-sm">👤</div>
+                <div>
+                    <h1 id="app-branding-logo" class="text-lg sm:text-xl font-bold tracking-tight text-white">AlphaLedger <span class="text-[10px] sm:text-xs text-emerald-400 font-mono">v1.5</span></h1>
+                    <p class="text-[9px] sm:text-[10px] text-gray-400 font-mono"><span data-i18n="operator">Operator</span>: <span id="nav-user-display-name" class="font-semibold text-gray-300">User</span></p>
+                </div>
+            </div>
+
+            <button onclick="toggleMobileMenu()" class="md:hidden text-gray-400 hover:text-white focus:outline-none p-2 rounded-lg border border-gray-700 cursor-pointer text-lg" aria-label="Toggle Menu">
+                <span>☰</span>
+            </button>
+
+            <div id="main-nav" class="hidden w-full md:flex md:w-auto flex-col md:flex-row flex-wrap items-center gap-1.5 mt-2 md:mt-0 transition-all">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition active-nav cursor-pointer" data-i18n="tabDashboard">Dashboard</button>
+                <button onclick="switchTab('cashflow')" id="nav-cashflow" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-emerald-500 transition cursor-pointer" data-i18n="tabCashflow">Cash Flow</button>
+                <button onclick="switchTab('trading')" id="nav-trading" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-emerald-500 transition cursor-pointer" data-i18n="tabTrading">Trading Journal</button>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-emerald-500 transition cursor-pointer" data-i18n="tabCalendar">Performance Calendar</button>
+                <button onclick="switchTab('capital')" id="nav-capital" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-emerald-500 transition cursor-pointer" data-i18n="tabCapital">Capital & Withdraw</button>
+                <button onclick="switchTab('categories')" id="nav-categories" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-emerald-500 transition cursor-pointer" data-i18n="tabCategories">Categories & Assets</button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-emerald-500 transition cursor-pointer">⚙️ <span data-i18n="tabSettings">Settings</span></button>
+            </div>
+
+            <div id="nav-actions-group" class="hidden md:flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
+                <button onclick="exportData()" class="w-full md:w-auto bg-gray-700 hover:bg-gray-600 text-[11px] sm:text-xs text-white font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer">
+                    📤 <span data-i18n="export">Export Everything</span>
+                </button>
+                <label class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-[11px] sm:text-xs text-white font-semibold py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1">
+                    📥 <span data-i18n="import">Import Everything</span>
+                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <main class="p-4 sm:p-6 max-w-[1600px] mx-auto min-h-[calc(100vh-76px)]">
+        <div id="toast" class="hidden fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl shadow-2xl transition-all transform duration-300 flex items-center gap-2 max-w-sm text-xs sm:text-sm"></div>
+
+        <section id="tab-dashboard" class="space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 flex items-center justify-between shadow-xs">
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="cardBankBalTitle">Bank Account Balance</p>
+                        <h3 id="card-bank-bal" class="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 text-white">$0.00</h3>
+                    </div>
+                    <div class="p-2.5 sm:p-3 bg-blue-500/10 rounded-xl text-xl sm:text-2xl">🏦</div>
+                </div>
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 flex items-center justify-between shadow-xs">
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="cardTradeBalTitle">Trading Account Balance</p>
+                        <h3 id="card-trade-bal" class="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 text-white">$0.00</h3>
+                    </div>
+                    <div class="p-2.5 sm:p-3 bg-emerald-500/10 rounded-xl text-xl sm:text-2xl">📈</div>
+                </div>
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 flex items-center justify-between shadow-xs sm:col-span-2 lg:col-span-1">
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wider" data-i18n="cardNetWorthTitle">Total Net Worth</p>
+                        <h3 id="card-net-worth" class="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 text-white">$0.00</h3>
+                    </div>
+                    <div class="p-2.5 sm:p-3 bg-purple-500/10 rounded-xl text-xl sm:text-2xl">💎</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6">
+                <div class="xl:col-span-3 space-y-4 sm:space-y-6">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-white flex items-center gap-2"><span>💸</span> <span data-i18n="recentCashflow">Recent Cash Flow</span></h3>
+                            <button onclick="switchTab('cashflow')" class="text-xs text-emerald-500 font-bold hover:underline cursor-pointer" data-i18n="viewAll">View All</button>
+                        </div>
+                        <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                            <table class="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[500px] sm:min-w-0">
+                                <thead class="bg-gray-700/50 text-gray-400 text-[10px] sm:text-xs uppercase font-mono">
+                                    <tr>
+                                        <th class="p-2.5 rounded-l-lg" data-i18n="thDate">Date</th>
+                                        <th class="p-2.5" data-i18n="thCategory">Category</th>
+                                        <th class="p-2.5" data-i18n="thType">Type</th>
+                                        <th class="p-2.5" data-i18n="thAmount">Amount</th>
+                                        <th class="p-2.5 rounded-r-lg" data-i18n="thNote">Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-cashflow-table" class="divide-y divide-gray-700/30"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-white flex items-center gap-2"><span>📊</span> <span data-i18n="recentTrades">Recent Trades</span></h3>
+                            <button onclick="switchTab('trading')" class="text-xs text-emerald-500 font-bold hover:underline cursor-pointer" data-i18n="viewAll">View All</button>
+                        </div>
+                        <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                            <table class="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[500px] sm:min-w-0">
+                                <thead class="bg-gray-700/50 text-gray-400 text-[10px] sm:text-xs uppercase font-mono">
+                                    <tr>
+                                        <th class="p-2.5 rounded-l-lg" data-i18n="thDate">Date</th>
+                                        <th class="p-2.5" data-i18n="thAsset">Asset</th>
+                                        <th class="p-2.5" data-i18n="thAction">Action</th>
+                                        <th class="p-2.5" data-i18n="thOutcome">Outcome</th>
+                                        <th class="p-2.5 rounded-r-lg" data-i18n="thPnL">PnL</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-trading-table" class="divide-y divide-gray-700/30"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-1 bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-semibold text-white mb-4 flex items-center gap-2"><span>⚡</span> <span data-i18n="sbTitle">Trading PnL Sidebar</span></h3>
+                        <div class="grid grid-cols-3 gap-1 bg-gray-900 p-1 rounded-lg mb-4 sm:mb-6">
+                            <button onclick="setSidebarPeriod('day')" id="sb-period-day" class="py-1 text-[11px] sm:text-xs font-medium rounded-md transition cursor-pointer bg-gray-700 text-white" data-i18n="sbDay">Day</button>
+                            <button onclick="setSidebarPeriod('month')" id="sb-period-month" class="py-1 text-[11px] sm:text-xs font-medium rounded-md transition cursor-pointer text-gray-400" data-i18n="sbMonth">Month</button>
+                            <button onclick="setSidebarPeriod('year')" id="sb-period-year" class="py-1 text-[11px] sm:text-xs font-medium rounded-md transition cursor-pointer text-gray-400" data-i18n="sbYear">Year</button>
+                        </div>
+
+                        <div class="space-y-3 sm:space-y-4">
+                            <div class="bg-gray-900/60 p-3 sm:p-4 rounded-xl border border-gray-700/50">
+                                <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider" data-i18n="sbNetPerf">Net Performance</p>
+                                <h4 id="sb-total-pnl" class="text-lg sm:text-xl lg:text-2xl font-bold mt-1 text-white">$0.00</h4>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                                <div class="bg-gray-900/60 p-2.5 sm:p-3 rounded-xl border border-gray-700/50">
+                                    <p class="text-[10px] sm:text-xs text-gray-400 uppercase" data-i18n="sbWinLoss">Win / Loss</p>
+                                    <p id="sb-win-loss-count" class="text-sm sm:text-base font-semibold text-white mt-0.5">0 / 0</p>
+                                </div>
+                                <div class="bg-gray-900/60 p-2.5 sm:p-3 rounded-xl border border-gray-700/50">
+                                    <p class="text-[10px] sm:text-xs text-gray-400 uppercase" data-i18n="sbWinRate">Win Rate</p>
+                                    <p id="sb-win-rate" class="text-sm sm:text-base font-semibold text-emerald-500 mt-0.5">0%</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 mt-5 sm:mt-6 mb-2 sm:mb-3" data-i18n="sbPeriodTrades">Trades for This Period</h4>
+                        <div id="sb-trades-list" class="space-y-2 max-h-[200px] sm:max-h-[300px] overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-cashflow" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-white mb-4" data-i18n="cfChartTitle">Income vs Expense Tracking</h3>
+                <div class="h-[200px] sm:h-[240px] w-full">
+                    <canvas id="cashflowChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div class="lg:col-span-1 space-y-4 sm:space-y-6">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                        <h3 id="cf-form-title" class="text-sm sm:text-base font-semibold text-white mb-4" data-i18n="cfFormAdd">Add Cash Flow</h3>
+                        <form id="cashflow-form" onsubmit="handleCashflowSubmit(event)" class="space-y-3.5">
+                            <input type="hidden" id="cf-id">
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thDate">Date</label>
+                                <input type="date" id="cf-date" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1"><span data-i18n="thCategory">Category</span> (<span data-i18n="sortedIncExp" class="text-emerald-400 font-normal lowercase text-[9px] sm:text-[10px]">sorted income / expense</span>)</label>
+                                <select id="cf-category" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" id="cf-amount-label">Amount ($)</label>
+                                <input type="number" step="0.01" min="0.01" id="cf-amount" required placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thNote">Description / Note</label>
+                                <textarea id="cf-note" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" id="cf-btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnSave">Save Entry</button>
+                                <button type="button" onclick="resetCashflowForm()" id="cf-btn-cancel" class="hidden bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs sm:text-sm font-semibold py-2 px-3 rounded-lg transition-all cursor-pointer" data-i18n="btnCancel">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+                        <h3 class="text-sm sm:text-base font-semibold text-white" data-i18n="cfRecordsLedger">Cash Flow Records</h3>
+                        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <input type="date" id="filter-cf-start" onchange="renderCashflow()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[11px] text-white">
+                            <input type="date" id="filter-cf-end" onchange="renderCashflow()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[11px] text-white">
+                            <select id="filter-cf-type" onchange="renderCashflow()" class="col-span-2 sm:col-span-1 bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[11px] text-white">
+                                <option value="" data-i18n="allTypes">All Types</option>
+                                <option value="Income" data-i18n="inc">Income</option>
+                                <option value="Expense" data-i18n="exp">Expense</option>
+                            </select>
+                            <select id="filter-cf-category" onchange="renderCashflow()" class="col-span-2 sm:col-span-1 bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[11px] text-white">
+                                <option value="" data-i18n="allCategories">All Categories</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <table class="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[600px] sm:min-w-0">
+                            <thead class="bg-gray-700/50 text-gray-400 text-[10px] sm:text-xs uppercase font-mono">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg" data-i18n="thDate">Date</th>
+                                    <th class="p-3" data-i18n="thCategory">Category</th>
+                                    <th class="p-3" data-i18n="thType">Type</th>
+                                    <th class="p-3" data-i18n="thAmount">Amount</th>
+                                    <th class="p-3" data-i18n="thNote">Note</th>
+                                    <th class="p-3 text-right rounded-r-lg" data-i18n="thActions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashflow-table-body" class="divide-y divide-gray-700/30"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-trading" class="hidden space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 lg:sticky lg:top-6">
+                        <h3 id="tj-form-title" class="text-sm sm:text-base font-semibold text-white mb-4" data-i18n="tjLogExecution">Log Execution Trade</h3>
+                        <form id="trading-form" onsubmit="handleTradingSubmit(event)" class="space-y-3.5">
+                            <input type="hidden" id="tj-id">
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thDate">Date</label>
+                                <input type="date" id="tj-date" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thAction">Direction</label>
+                                    <select id="tj-direction" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                                        <option value="Buy">BUY / LONG</option>
+                                        <option value="Sell">SELL / SHORT</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thOutcome">Outcome</label>
+                                    <select id="tj-outcome" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                                        <option value="Profit">🟢 PROFIT</option>
+                                        <option value="Loss">🔴 LOSS</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" id="tj-amount-label">Amount ($)</label>
+                                    <input type="number" step="0.01" min="0.01" id="tj-amount" required placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thAsset">Ticker / Asset</label>
+                                    <select id="tj-ticker-select" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 uppercase"></select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thNote">Journal Notes</label>
+                                <textarea id="tj-note" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" id="tj-btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnSaveTrade">Save Trade</button>
+                                <button type="button" onclick="resetTradingForm()" id="tj-btn-cancel" class="hidden bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs sm:text-sm font-semibold py-2 px-3 rounded-lg transition-all cursor-pointer" data-i18n="btnCancel">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                    <h3 class="text-sm sm:text-base font-semibold text-white mb-4" data-i18n="tradeLedgerRecords">Trade Records Ledger</h3>
+                    <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <table class="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[650px] sm:min-w-0">
+                            <thead class="bg-gray-700/50 text-gray-400 text-[10px] sm:text-xs uppercase font-mono">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg" data-i18n="thDate">Date</th>
+                                    <th class="p-3" data-i18n="thAsset">Asset</th>
+                                    <th class="p-3" data-i18n="thAction">Action</th>
+                                    <th class="p-3" data-i18n="thOutcome">Outcome</th>
+                                    <th class="p-3" data-i18n="thGrossRealized">Gross Realized</th>
+                                    <th class="p-3" data-i18n="thNote">Notes</th>
+                                    <th class="p-3 text-right rounded-r-lg" data-i18n="thActions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trading-table-body" class="divide-y divide-gray-700/30"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-calendar" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+                    <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-white flex items-center gap-2"><span>📅</span> <span data-i18n="calTitle">Trading Performance Analytics Calendar</span></h3>
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <select id="cal-year-select" onchange="renderPerformanceCalendar()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500"></select>
+                        <select id="cal-month-select" onchange="renderPerformanceCalendar()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500">
+                            <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                            <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                            <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                            <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-mono font-bold text-gray-400 mb-2 border-b border-gray-700/40 pb-2">
+                    <div data-i18n="daySun">SUN</div><div data-i18n="dayMon">MON</div><div data-i18n="dayTue">TUE</div>
+                    <div data-i18n="dayWed">WED</div><div data-i18n="dayThu">THU</div><div data-i18n="dayFri">FRI</div><div data-i18n="daySat">SAT</div>
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1 sm:gap-2"></div>
+            </div>
+        </section>
+
+        <section id="tab-capital" class="hidden space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 space-y-4">
+                    <h3 id="cap-form-heading" class="text-sm sm:text-base font-semibold text-white flex items-center gap-2"><span>📥</span> <span data-i18n="injectCapitalTitle">Funding Capital (Bank → Trade Account)</span></h3>
+                    <form id="capital-form" onsubmit="handleCapitalSubmit(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-gray-900/50 p-3 sm:p-4 rounded-xl border border-gray-700">
+                        <input type="hidden" id="cap-id">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thDate">Date</label>
+                            <input type="date" id="cap-date" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" id="cap-amount-label">Amount ($)</label>
+                            <input type="number" step="0.01" min="0.01" id="cap-amount" required placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="fundingNotes">Funding Notes</label>
+                            <input type="text" id="cap-note" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div class="sm:col-span-3 flex justify-end gap-2">
+                            <button type="button" onclick="resetCapitalForm()" id="cap-btn-cancel" class="hidden bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnCancel">Cancel</button>
+                            <button type="submit" id="cap-btn-submit" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnInject">Inject Capital</button>
+                        </div>
+                    </form>
+
+                    <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <table class="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[400px] sm:min-w-0">
+                            <thead class="bg-gray-700/50 text-gray-400 text-[10px] sm:text-xs uppercase font-mono">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg" data-i18n="thDate">Date</th>
+                                    <th class="p-3" data-i18n="thAmount">Amount</th>
+                                    <th class="p-3" data-i18n="thNote">Note</th>
+                                    <th class="p-3 text-right rounded-r-lg" data-i18n="thActions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="capital-table-body" class="divide-y divide-gray-700/30"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 space-y-4">
+                    <h3 id="wth-form-heading" class="text-sm sm:text-base font-semibold text-white flex items-center gap-2"><span>📤</span> <span data-i18n="extractFundsTitle">Extract Funds (Trade Account → Bank)</span></h3>
+                    <form id="withdraw-form" onsubmit="handleWithdrawalSubmit(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-gray-900/50 p-3 sm:p-4 rounded-xl border border-gray-700">
+                        <input type="hidden" id="wth-id">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="thDate">Date</label>
+                            <input type="date" id="wth-date" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" id="wth-amount-label">Amount ($)</label>
+                            <input type="number" step="0.01" min="0.01" id="wth-amount" required placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" data-i18n="withdrawalNotes">Withdrawal Notes</label>
+                            <input type="text" id="wth-note" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div class="sm:col-span-3 flex justify-end gap-2">
+                            <button type="button" onclick="resetWithdrawForm()" id="wth-btn-cancel" class="hidden bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnCancel">Cancel</button>
+                            <button type="submit" id="wth-btn-submit" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnRequestWithdrawal">Request Withdrawal</button>
+                        </div>
+                    </form>
+
+                    <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <table class="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[400px] sm:min-w-0">
+                            <thead class="bg-gray-700/50 text-gray-400 text-[10px] sm:text-xs uppercase font-mono">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg" data-i18n="thDate">Date</th>
+                                    <th class="p-3" data-i18n="thAmount">Amount</th>
+                                    <th class="p-3" data-i18n="thNote">Note</th>
+                                    <th class="p-3 text-right rounded-r-lg" data-i18n="thActions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdraw-table-body" class="divide-y divide-gray-700/30"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-categories" class="hidden space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div class="flex flex-col sm:grid sm:grid-cols-3 gap-4 bg-gray-850 p-1 rounded-xl border border-gray-800">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <h3 id="cat-form-title" class="text-xs sm:text-sm font-semibold text-white mb-3" data-i18n="catFormCreate">Create Category</h3>
+                        <form id="category-form" onsubmit="handleCategorySubmit(event)" class="space-y-3">
+                            <input type="hidden" id="cat-id">
+                            <div>
+                                <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1" data-i18n="catTitleLabel">Category Name</label>
+                                <input type="text" id="cat-name" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1" data-i18n="catAllocType">Type</label>
+                                <select id="cat-type" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-emerald-500">
+                                    <option value="Income">Income (+)</option>
+                                    <option value="Expense">Expense (-)</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1" data-i18n="catIconEmoji">Icon</label>
+                                    <input type="text" id="cat-icon" placeholder="🍔" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-center text-white focus:border-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1" data-i18n="catColorTheme">Color</label>
+                                    <input type="color" id="cat-color" value="#10B981" class="w-full bg-gray-900 border border-gray-700 rounded-lg h-8 p-1 cursor-pointer">
+                                </div>
+                            </div>
+                            <div class="flex gap-1 pt-1">
+                                <button type="submit" id="cat-btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold py-1.5 px-2 rounded-lg transition cursor-pointer" data-i18n="btnSaveCat">Save Category</button>
+                                <button type="button" onclick="resetCategoryForm()" id="cat-btn-cancel" class="hidden bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-semibold py-1.5 px-2 rounded-lg transition cursor-pointer" data-i18n="btnCancel">X</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="sm:col-span-2 bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <h3 class="text-xs sm:text-sm font-semibold text-white mb-3" data-i18n="catExisting">Existing Categories</h3>
+                        <div class="overflow-x-auto max-h-[320px] overflow-y-auto">
+                            <table class="w-full text-left text-xs text-gray-300">
+                                <thead class="bg-gray-700/50 text-gray-400 text-[10px] uppercase font-mono sticky top-0">
+                                    <tr>
+                                        <th class="p-2 cursor-pointer" onclick="toggleCategorySorting('name')">Name <span id="sort-indicator-name"></span></th>
+                                        <th class="p-2 cursor-pointer" onclick="toggleCategorySorting('type')">Type <span id="sort-indicator-type"></span></th>
+                                        <th class="p-2 text-right">Actions</th>
+                                        </tr>
+                                </thead>
+                                <tbody id="categories-table-body" class="divide-y divide-gray-700/30"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:grid sm:grid-cols-3 gap-4 bg-gray-850 p-1 rounded-xl border border-gray-800">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <h3 id="ast-form-title" class="text-xs sm:text-sm font-semibold text-white mb-3" data-i18n="astFormCreate">Create Asset Ticker</h3>
+                        <form id="asset-form" onsubmit="handleAssetSubmit(event)" class="space-y-3">
+                            <input type="hidden" id="ast-id">
+                            <div>
+                                <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1" data-i18n="thAsset">Asset Ticker</label>
+                                <input type="text" id="ast-name" required placeholder="e.g., BTC, AAPL" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white uppercase focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-gray-400 uppercase mb-1" data-i18n="astClass">Asset Class</label>
+                                <input type="text" id="ast-class" placeholder="Crypto, Stocks, Forex" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-emerald-500">
+                            </div>
+                            <div class="flex gap-1 pt-1">
+                                <button type="submit" id="ast-btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold py-1.5 px-2 rounded-lg transition cursor-pointer" data-i18n="btnSaveAst">Save Asset</button>
+                                <button type="button" onclick="resetAssetForm()" id="ast-btn-cancel" class="hidden bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-semibold py-1.5 px-2 rounded-lg transition cursor-pointer" data-i18n="btnCancel">X</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="sm:col-span-2 bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <h3 class="text-xs sm:text-sm font-semibold text-white mb-3" data-i18n="astExisting">Available Assets Dropdown List</h3>
+                        <div class="overflow-x-auto max-h-[320px] overflow-y-auto">
+                            <table class="w-full text-left text-xs text-gray-300">
+                                <thead class="bg-gray-700/50 text-gray-400 text-[10px] uppercase font-mono sticky top-0">
+                                    <tr>
+                                        <th class="p-2">Ticker Name</th>
+                                        <th class="p-2">Class</th>
+                                        <th class="p-2 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assets-table-body" class="divide-y divide-gray-700/30"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-settings" class="hidden space-y-4 sm:space-y-6">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                <h3 class="text-base sm:text-xl font-bold text-white border-b border-gray-700 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <span data-i18n="settingsTitle">System Control Panel Settings</span>
+                    <button onclick="restoreDefaultSettings()" class="w-full sm:w-auto bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white text-xs font-semibold py-1.5 px-3 rounded-lg border border-red-500/30 transition-all cursor-pointer">
+                        🔄 Restore Default Settings
+                    </button>
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6">
+                    <div class="space-y-5 sm:space-y-6">
+                        <div>
+                            <h4 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 mb-3" data-i18n="setLocalization">Core Language Preference</h4>
+                            <div class="flex gap-3">
+                                <button onclick="setSystemLanguage('en')" id="lang-btn-en" class="flex-1 py-2 px-3 sm:px-4 rounded-xl border border-emerald-500 text-xs sm:text-sm font-semibold font-mono bg-gray-700 text-white cursor-pointer">English (EN)</button>
+                                <button onclick="setSystemLanguage('kh')" id="lang-btn-kh" class="flex-1 py-2 px-3 sm:px-4 rounded-xl border border-gray-700 text-xs sm:text-sm font-semibold text-gray-400 hover:text-white cursor-pointer">ភាសាខ្មែរ (KH)</button>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 mb-3" data-i18n="setCurrency">Global Accounting Currency</h4>
+                            <div class="flex gap-3">
+                                <button onclick="setSystemCurrency('USD')" id="curr-btn-usd" class="flex-1 py-2 px-3 sm:px-4 rounded-xl border border-gray-600 text-xs sm:text-sm font-semibold text-center transition-all cursor-pointer bg-gray-700 text-white">🇺🇸 USD ($)</button>
+                                <button onclick="setSystemCurrency('KHR')" id="curr-btn-khr" class="flex-1 py-2 px-3 sm:px-4 rounded-xl border border-gray-600 text-xs sm:text-sm font-semibold text-center transition-all cursor-pointer text-gray-400">🇰🇭 KHR (៛)</button>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 mb-3" data-i18n="setRenameSystem">System Branding Label</h4>
+                            <label class="block text-[11px] sm:text-xs text-gray-400 mb-1" data-i18n="setRenameSysDesc">Change application header banner branding title</label>
+                            <input type="text" id="settings-system-name" oninput="updateSystemBrandingString(this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                    <div class="space-y-5 sm:space-y-6">
+                        <div>
+                            <h4 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 mb-3" data-i18n="setProfileIdentity">Profile Customization</h4>
+                            <div class="space-y-4 bg-gray-900/40 p-4 rounded-xl border border-gray-700/60">
+                                <div>
+                                    <label class="block text-[11px] sm:text-xs text-gray-400 mb-1" data-i18n="setProfileName">Display Operator Name</label>
+                                    <input type="text" id="settings-profile-name" oninput="updateOperatorIdentityProfileName(this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] sm:text-xs text-gray-400 mb-1" data-i18n="setProfileAvatar">Avatar Graphic File Upload</label>
+                                    <div class="flex items-center gap-3 mt-1">
+                                        <div id="settings-avatar-preview" class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-emerald-500 flex items-center justify-center text-lg sm:text-xl overflow-hidden border border-emerald-400">👤</div>
+                                        <input type="file" id="avatar-input" accept="image/*" onchange="processAvatarImageUploadBinary(event)" class="text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] sm:text-xs file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 file:cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let state = {
+            categories: [],
+            assets: [],
+            cashflow: [],
+            trading: [],
+            capital: [],
+            withdraw: [],
+            settings: {
+                lang: 'en',
+                currency: 'USD',
+                systemName: 'AlphaLedger',
+                userName: 'Admin Specialist',
+                userAvatar: null
+            }
+        };
+
+        const KHR_MULTIPLIER = 4000;
+        let sidebarFilterPeriod = 'day'; 
+        let cashflowChartInstance = null;
+        let categorySortConfig = { field: null, direction: 'asc' };
+
+        const dictionary = {
+            en: {
+                operator: "Operator", tabDashboard: "Dashboard", tabCashflow: "Cash Flow", tabTrading: "Trading Journal", tabCalendar: "Performance Calendar",
+                tabCapital: "Capital & Withdraw", tabCategories: "Categories & Assets", tabSettings: "Settings",
+                export: "Export Everything", import: "Import Everything", cardBankBalTitle: "Bank Account Balance",
+                cardTradeBalTitle: "Trading Account Balance", cardNetWorthTitle: "Total Net Worth", recentCashflow: "Recent Cash Flow",
+                viewAll: "View All", thDate: "Date", thCategory: "Category", thType: "Type", thAmount: "Amount",
+                thNote: "Note", recentTrades: "Recent Trades", thAsset: "Asset", thAction: "Action", thOutcome: "Outcome",
+                thPnL: "PnL", sbTitle: "Trading PnL Sidebar", sbDay: "Day", sbMonth: "Month", sbYear: "Year",
+                sbNetPerf: "Net Performance", sbWinLoss: "Win / Loss", sbWinRate: "Win Rate", sbPeriodTrades: "Trades for This Period",
+                cfChartTitle: "Income vs Expense Tracking", cfFormAdd: "Add Cash Flow", btnSave: "Save Entry",
+                btnCancel: "Cancel", cfRecordsLedger: "Cash Flow Records", allTypes: "All Types", inc: "Income", exp: "Expense",
+                allCategories: "All Categories", thActions: "Actions", tjLogExecution: "Log Execution Trade",
+                btnSaveTrade: "Save Trade", tradeLedgerRecords: "Trade Records Ledger", thGrossRealized: "Gross Realized",
+                injectCapitalTitle: "Funding Capital (Bank → Trade Account)", fundingNotes: "Funding Notes",
+                btnInject: "Inject Capital", extractFundsTitle: "Extract Funds (Trade Account → Bank)", withdrawalNotes: "Withdrawal Notes",
+                btnRequestWithdrawal: "Request Withdrawal", catFormCreate: "Create Category", catTitleLabel: "Category Title Name",
+                catAllocType: "Financial Allocation Type", catIconEmoji: "Icon Emoji", catColorTheme: "Color Theme",
+                btnSaveCat: "Save Category", catExisting: "Existing Categories", settingsTitle: "System Control Panel Settings",
+                setLocalization: "Core Language Preference", setRenameSystem: "System Branding Label",
+                setRenameSysDesc: "Change application header banner branding title", setProfileIdentity: "Profile Customization",
+                setProfileName: "Display Operator Name", setProfileAvatar: "Avatar Graphic File Upload",
+                sortedIncExp: "sorted income / expense", setCurrency: "Global Accounting Currency",
+                astFormCreate: "Create Asset Ticker", astExisting: "Available Assets Dropdown List", astClass: "Asset Class", btnSaveAst: "Save Asset",
+                calTitle: "Trading Performance Analytics Calendar", daySun: "SUN", dayMon: "MON", dayTue: "TUE", dayWed: "WED", dayThu: "THU", dayFri: "FRI", daySat: "SAT"
+            },
+            kh: {
+                operator: "អ្នកប្រតិបត្តិ", tabDashboard: "ផ្ទាំងគ្រប់គ្រង", tabCashflow: "លំហូរសាច់ប្រាក់", tabTrading: "កំណត់ហេតុជួញដូរ", tabCalendar: "ប្រតិទិនលទ្ធផលជួញដូរ",
+                tabCapital: "ដើមទុន & ការដកប្រាក់", tabCategories: "ចំណាត់ថ្នាក់ & ទ្រព្យសកម្ម", tabSettings: "ការកំណត់ប្រព័ន្ធ",
+                export: "នាំចេញទិន្នន័យទាំងអស់", import: "នាំចូលទិន្នន័យទាំងអស់", cardBankBalTitle: "សមតុល្យគណនីធនាគារ",
+                cardTradeBalTitle: "សមតុល្យគណនីជួញដូរ", cardNetWorthTitle: "ទ្រព្យសម្បត្តិសុទ្ធសរុប", recentCashflow: "លំហូរសាច់ប្រាក់ថ្មីៗ",
+                viewAll: "មើលទាំងអស់", thDate: "កាលបរិច្ឆេទ", thCategory: "ប្រភេទ", thType: "ប្រភេទប្រតិបត្តិការ", thAmount: "ទឹកប្រាក់",
+                thNote: "កំណត់ចំណាំ", recentTrades: "ការជួញដូរថ្មីៗ", thAsset: "ទ្រព្យសកម្ម", thAction: "ទិសដៅ", thOutcome: "លទ្ធផល",
+                thPnL: "ចំណេញ/ខាត", sbTitle: "របារចំហៀង PnL ជួញដូរ", sbDay: "ថ្ងៃ", sbMonth: "ខែ", sbYear: "ឆ្នាំ",
+                sbNetPerf: "លទ្ធផលសុទ្ធ", sbWinLoss: "ឈ្នះ / ចាញ់", sbWinRate: "អត្រាឈ្នះ", sbPeriodTrades: "ការជួញដូរក្នុងវដ្តនេះ",
+                cfChartTitle: "ការតាមដានចំណូលនិងចំណាយ", cfFormAdd: "បន្ថែមលំហូរសាច់ប្រាក់", btnSave: "រក្សាទុកធាតុ",
+                btnCancel: "បោះបង់", cfRecordsLedger: "កំណត់ត្រាលំហូរសាច់ប្រាក់", allTypes: "គ្រប់ប្រភេទប្រតិបត្តិការ", inc: "ចំណូល", exp: "ចំណាយ",
+                allCategories: "គ្រប់ប្រភេទចំណាត់ថ្នាក់", thActions: "សកម្មភាព", tjLogExecution: "កត់ត្រាការជួញដូរ",
+                btnSaveTrade: "រក្សាទុកការជួញដូរ", tradeLedgerRecords: "សៀវភៅបញ្ជីកំណត់ត្រាជួញដូរ", thGrossRealized: "ចំណេញខាតសរុប",
+                injectCapitalTitle: "បញ្ចូលដើមទុនជួញដូរ (ធនាគារ → គណនីជួញដូរ)", fundingNotes: "ចំណាំការបញ្ចូលទុន",
+                btnInject: "បញ្ចូលដើមទុន", extractFundsTitle: "ដកប្រាក់ចំណេញ (គណនីជួញដូរ → ធនាគារ)", withdrawalNotes: "ចំណាំការដកប្រាក់",
+                btnRequestWithdrawal: "ស្នើសុំការដកប្រាក់", catFormCreate: "បង្កើតប្រភេទថ្មី", catTitleLabel: "ឈ្មោះប្រភេទចំណាត់ថ្នាក់",
+                catAllocType: "ប្រភេទបែងចែកហិរញ្ញវត្ថុ", catIconEmoji: "រូបសញ្ញា Emoji", catColorTheme: "#ប្រធានបទពណ៌",
+                btnSaveCat: "រក្សាទុកប្រភេទ", catExisting: "ប្រភេទចំណាត់ថ្នាក់ដែលមានស្រាប់", settingsTitle: "ផ្ទាំងបញ្ជាការកំណត់ប្រព័ន្ធ",
+                setLocalization: "ជម្រើសភាសា ចម្បង", setRenameSystem: "ស្លាកម៉ាកសញ្ញាប្រព័ន្ធ",
+                setRenameSysDesc: "ផ្លាស់ប្តូរចំណងជើងបដាកំពូលនៃកម្មវិធី", setProfileIdentity: "ការកែសម្រួលប្រវត្តិរូប",
+                setProfileName: "ឈ្មោះអ្នកប្រតិបត្តិករ", setProfileAvatar: "ទាញយកក្រាហ្វិករូបតំណាង",
+                sortedIncExp: "តម្រៀបចំណូល / ចំណាយ", setCurrency: "រូបិយប័ណ្ណគណនេយ្យសកល",
+                astFormCreate: "បង្កើតកូដទ្រព្យសកម្ម", astExisting: "បញ្ជីទ្រព្យសកម្មដែលអាចជ្រើសរើសបាន", astClass: "ប្រភេទថ្នាក់ទ្រព្យសកម្ម", btnSaveAst: "រក្សាទុកទ្រព្យសកម្ម",
+                calTitle: "ប្រតិទិនវិភាគលទ្ធផលនៃការជួញដូរ", daySun: "អាទិត្យ", dayMon: "ច័ន្ទ", dayTue: "អង្គារ", dayWed: "ពុធ", dayThu: "ព្រហស្បតិ៍", dayFri: "សុក្រ", daySat: "សៅរ៍"
+            }
+        };
+
+        function showToast(message, type = 'success') {
+            const el = document.getElementById('toast');
+            el.innerText = message;
+            el.className = `fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl shadow-2xl transition-all transform duration-300 flex items-center gap-2 text-xs font-semibold max-w-sm ${
+                type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'
+            }`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 4000);
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('main-nav');
+            const actions = document.getElementById('nav-actions-group');
+            menu.classList.toggle('hidden');
+            actions.classList.toggle('hidden');
+        }
+
+        function loadStateFromLocalStorage() {
+            const data = localStorage.getItem('ALPHA_LEDGER_DATA_STORAGE_KEY');
+            if (data) {
+                try {
+                    state = JSON.parse(data);
+                    ['categories','assets','cashflow','capital','trading','withdraw'].forEach(key => {
+                        if(!Array.isArray(state[key])) state[key] = [];
+                    });
+                    if (!state.settings) state.settings = {};
+                    state.settings = Object.assign({
+                        lang: 'en',
+                        currency: 'USD',
+                        systemName: 'AlphaLedger',
+                        userName: 'Admin Specialist',
+                        userAvatar: null
+                    }, state.settings);
+                } catch (e) {
+                    showToast("Database architecture read failure.", "error");
+                }
+            }
+        }
+
+        function saveStateToLocalStorage() {
+            localStorage.setItem('ALPHA_LEDGER_DATA_STORAGE_KEY', JSON.stringify(state));
+            refreshApplicationUiViewEngines();
+        }
+
+        function restoreDefaultSettings() {
+            if (confirm("Are you sure you want to restore configurations back to system default parameters?")) {
+                state.settings = { lang: 'en', currency: 'USD', systemName: 'AlphaLedger', userName: 'Admin Specialist', userAvatar: null };
+                saveStateToLocalStorage();
+                syncSettingsInputFormFields();
+                showToast("System layout configurations restored to factory parameters.");
+            }
+        }
+
+        function initializeDefaultCategoriesAndAssets() {
+            if (state.categories.length === 0) {
+                state.categories = [
+                    { id: 'cat-def-1', name: 'Salary', type: 'Income', icon: '💰', color: '#10B981' },
+                    { id: 'cat-def-2', name: 'Food', type: 'Expense', icon: '🍔', color: '#EF4444' },
+                    { id: 'cat-def-3', name: 'Rent', type: 'Expense', icon: '🏠', color: '#3B82F6' },
+                    { id: 'cat-def-4', name: 'Freelance', type: 'Income', icon: '🚀', color: '#8B5CF6' }
+                ];
+            }
+            if (state.assets.length === 0) {
+                state.assets = [
+                    { id: 'ast-def-1', name: 'AAPL', assetClass: 'Stocks' },
+                    { id: 'ast-def-2', name: 'BTC', assetClass: 'Crypto' },
+                    { id: 'ast-def-3', name: 'EURUSD', assetClass: 'Forex' }
+                ];
+            }
+        }
+
+        function populateYearsCalendarSelectors() {
+            const select = document.getElementById('cal-year-select');
+            if(!select || select.options.length > 0) return;
+            for(let y = 2023; y <= 2035; y++) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.innerText = y;
+                select.appendChild(opt);
+            }
+            const now = new Date();
+            select.value = now.getFullYear();
+            document.getElementById('cal-month-select').value = now.getMonth();
+        }
+
+        function applyLanguageSettingsDictionary() {
+            const currentLang = state.settings.lang;
+            document.documentElement.className = currentLang === 'kh' ? 'dark lang-kh' : 'dark';
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const translationKey = element.getAttribute('data-i18n');
+                if (dictionary[currentLang] && dictionary[currentLang][translationKey]) {
+                    element.innerText = dictionary[currentLang][translationKey];
+                }
+            });
+            const suffix = state.settings.currency === 'KHR' ? '៛' : '$';
+            ['cf-amount-label','tj-amount-label','cap-amount-label','wth-amount-label'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerText = currentLang === 'kh' ? `ទឹកប្រាក់ (${suffix})` : `Amount (${suffix})`;
+            });
+        }
+
+        function updateSystemBrandingString(val) {
+            const clean = val.trim() || "AlphaLedger";
+            state.settings.systemName = clean;
+            document.getElementById('meta-title').innerText = clean + " v1.5";
+            document.getElementById('app-branding-logo').innerHTML = `${clean} <span class="text-[10px] sm:text-xs text-emerald-400 font-mono">v1.5</span>`;
+            localStorage.setItem('ALPHA_LEDGER_DATA_STORAGE_KEY', JSON.stringify(state));
+        }
+
+        function updateOperatorIdentityProfileName(val) {
+            const clean = val.trim() || "User";
+            state.settings.userName = clean;
+            document.getElementById('nav-user-display-name').innerText = clean;
+            localStorage.setItem('ALPHA_LEDGER_DATA_STORAGE_KEY', JSON.stringify(state));
+        }
+
+        function processAvatarImageUploadBinary(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.settings.userAvatar = e.target.result;
+                saveStateToLocalStorage();
+                showToast("Identity file loaded.");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderAvatarComponentElements() {
+            const frame = document.getElementById('user-avatar-frame');
+            const settingsFrame = document.getElementById('settings-avatar-preview');
+            if (state.settings.userAvatar) {
+                const imageTag = `<img src="${state.settings.userAvatar}" class="w-full h-full object-cover" />`;
+                frame.innerHTML = imageTag; if(settingsFrame) settingsFrame.innerHTML = imageTag;
+            } else {
+                frame.innerHTML = "👤"; if(settingsFrame) settingsFrame.innerHTML = "👤";
+            }
+        }
+
+        function setSystemLanguage(langCode) {
+            state.settings.lang = langCode; saveStateToLocalStorage(); syncSettingsInputFormFields();
+        }
+
+        function setSystemCurrency(curr) {
+            state.settings.currency = curr; saveStateToLocalStorage(); syncSettingsInputFormFields();
+        }
+
+        function syncSettingsInputFormFields() {
+            document.getElementById('settings-system-name').value = state.settings.systemName;
+            document.getElementById('settings-profile-name').value = state.settings.userName;
+            const btnEn = document.getElementById('lang-btn-en');
+            const btnKh = document.getElementById('lang-btn-kh');
+            if(btnEn && btnKh) {
+                const isEn = state.settings.lang === 'en';
+                btnEn.className = isEn ? "flex-1 py-2 px-4 rounded-xl border border-emerald-500 text-xs sm:text-sm font-semibold font-mono bg-gray-700 text-white cursor-pointer" : "flex-1 py-2 px-4 rounded-xl border border-gray-700 text-xs sm:text-sm font-semibold font-mono text-gray-400 hover:text-white cursor-pointer";
+                btnKh.className = !isEn ? "flex-1 py-2 px-4 rounded-xl border border-emerald-500 text-xs sm:text-sm font-semibold bg-gray-700 text-white cursor-pointer" : "flex-1 py-2 px-4 rounded-xl border border-gray-700 text-xs sm:text-sm font-semibold text-gray-400 hover:text-white cursor-pointer";
+            }
+            const btnUsd = document.getElementById('curr-btn-usd');
+            const btnKhr = document.getElementById('curr-btn-khr');
+            if(btnUsd && btnKhr) {
+                const isUsd = state.settings.currency === 'USD';
+                btnUsd.className = isUsd ? "flex-1 py-2 px-4 rounded-xl border border-emerald-500 text-xs sm:text-sm font-semibold bg-gray-700 text-white cursor-pointer" : "flex-1 py-2 px-4 rounded-xl border border-gray-700 text-xs sm:text-sm font-semibold text-gray-400 hover:text-white cursor-pointer";
+                btnKhr.className = !isUsd ? "flex-1 py-2 px-4 rounded-xl border border-emerald-500 text-xs sm:text-sm font-semibold bg-gray-700 text-white cursor-pointer" : "flex-1 py-2 px-4 rounded-xl border border-gray-700 text-xs sm:text-sm font-semibold text-gray-400 hover:text-white cursor-pointer";
+            }
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `${state.settings.systemName.replace(/\s+/g, '_')}_MasterBackup.json`);
+            document.body.appendChild(dl); dl.click(); dl.remove();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.categories && parsed.cashflow && parsed.trading) {
+                        state = parsed; if(!state.assets) state.assets = [];
+                        saveStateToLocalStorage(); syncSettingsInputFormFields(); showToast("Full backup environment metrics loaded.");
+                    }
+                } catch(err) { showToast("Contents read error.", "error"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function calculateFinancialBalances() {
+            const totalCashflowIncome = state.cashflow.filter(c => c.type === 'Income').reduce((sum, c) => sum + parseFloat(c.amount), 0);
+            const totalCashflowExpense = state.cashflow.filter(c => c.type === 'Expense').reduce((sum, c) => sum + parseFloat(c.amount), 0);
+            const bankAccountBalance = totalCashflowIncome - totalCashflowExpense;
+
+            const totalCapitalInjected = state.capital.reduce((sum, c) => sum + parseFloat(c.amount), 0);
+            const totalWithdrawalsAllocated = state.withdraw.reduce((sum, w) => sum + parseFloat(w.amount), 0);
+            
+            const totalTradingProfit = state.trading.filter(t => t.outcome === 'Profit').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            const totalTradingLoss = state.trading.filter(t => t.outcome === 'Loss').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            const netTradingPnL = totalTradingProfit - totalTradingLoss;
+
+            const tradingAccountBalance = totalCapitalInjected - totalWithdrawalsAllocated + netTradingPnL;
+            return { bankAccountBalance, tradingAccountBalance, totalNetWorth: bankAccountBalance + tradingAccountBalance };
+        }
+
+        function formatCurrency(valInUSD) {
+            const isKhr = state.settings.currency === 'KHR';
+            const value = isKhr ? valInUSD * KHR_MULTIPLIER : valInUSD;
+            const sign = value < 0 ? '-' : ''; const absValue = Math.abs(value);
+            return isKhr ? `${sign}${Math.round(absValue).toLocaleString('en-US')} ៛` : `${sign}$${absValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function populateSortedDropdownSelectors() {
+            const selectCf = document.getElementById('cf-category');
+            const filterCf = document.getElementById('filter-cf-category');
+            const selectTj = document.getElementById('tj-ticker-select');
+            
+            if(selectCf && filterCf) {
+                const sVal = selectCf.value; const fVal = filterCf.value;
+                selectCf.innerHTML = ''; filterCf.innerHTML = `<option value="">${state.settings.lang === 'kh' ? 'គ្រប់ប្រភេទ':'All Categories'}</option>`;
+                
+                const inc = state.categories.filter(c => c.type === 'Income').sort((a,b)=>a.name.localeCompare(b.name));
+                const exp = state.categories.filter(c => c.type === 'Expense').sort((a,b)=>a.name.localeCompare(b.name));
+                
+                [...inc, ...exp].forEach(cat => {
+                    selectCf.insertAdjacentHTML('beforeend', `<option value="${cat.id}">${cat.type === 'Income' ? '🟢':'🔴'} ${cat.icon} ${cat.name}</option>`);
+                    filterCf.insertAdjacentHTML('beforeend', `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`);
+                });
+                if(sVal) selectCf.value = sVal; if(fVal) filterCf.value = fVal;
+            }
+
+            if(selectTj) {
+                const tVal = selectTj.value; selectTj.innerHTML = '';
+                state.assets.sort((a,b)=>a.name.localeCompare(b.name)).forEach(ast => {
+                    selectTj.insertAdjacentHTML('beforeend', `<option value="${ast.name}">${ast.name} [${ast.assetClass || 'Asset'}]</option>`);
+                });
+                if(tVal) selectTj.value = tVal;
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.querySelectorAll('#main-nav button').forEach(btn => { btn.classList.remove('active-nav'); btn.classList.add('text-gray-400'); });
+            const currentTabBtn = document.getElementById('nav-' + tabId);
+            if(currentTabBtn) { currentTabBtn.classList.add('active-nav'); currentTabBtn.classList.remove('text-gray-400'); }
+            if(window.innerWidth < 768) {
+                const menu = document.getElementById('main-nav');
+                const actions = document.getElementById('nav-actions-group');
+                menu.classList.add('hidden');
+                actions.classList.add('hidden');
+            }
+            if(tabId === 'cashflow') renderChartsEngine();
+            if(tabId === 'calendar') renderPerformanceCalendar();
+        }
+
+        function refreshApplicationUiViewEngines() {
+            const balances = calculateFinancialBalances();
+            document.getElementById('card-bank-bal').innerText = formatCurrency(balances.bankAccountBalance);
+            document.getElementById('card-trade-bal').innerText = formatCurrency(balances.tradingAccountBalance);
+            document.getElementById('card-net-worth').innerText = formatCurrency(balances.totalNetWorth);
+            applyLanguageSettingsDictionary(); renderAvatarComponentElements(); populateSortedDropdownSelectors();
+            renderDashboardTables(); renderCashflow(); renderTrading(); renderCapitalAccountModules(); renderCategories(); renderAssetsTable(); renderSidebarPnLMetrics(); renderPerformanceCalendar();
+        }
+
+        function renderDashboardTables() {
+            const cfContainer = document.getElementById('dash-cashflow-table');
+            const tjContainer = document.getElementById('dash-trading-table');
+            const recentCf = [...state.cashflow].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            const recentTj = [...state.trading].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+            cfContainer.innerHTML = recentCf.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-xs text-gray-500">No records.</td></tr>` : '';
+            recentCf.forEach(c => {
+                const cat = state.categories.find(catItem => catItem.id === c.categoryId) || { name: 'Transfer Link', icon: '🔄' };
+                cfContainer.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/20 text-xs text-gray-300">
+                        <td class="p-2.5 font-mono">${c.date}</td>
+                        <td class="p-2.5 flex items-center gap-1.5"><span>${cat.icon}</span><span>${cat.name}</span></td>
+                        <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.type=='Income'?'bg-emerald-500/10 text-emerald-500':'bg-red-500/10 text-red-500'}">${c.type}</span></td>
+                        <td class="p-2.5 font-semibold ${c.type==='Income'?'text-emerald-500':'text-red-500'}">${c.type==='Income'?'+':'-'}${formatCurrency(c.amount)}</td>
+                        <td class="p-2.5 text-gray-400 truncate max-w-[120px] sm:max-w-[150px]">${c.note || '-'}</td>
+                    </tr>
+                `);
+            });
+
+            tjContainer.innerHTML = recentTj.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-xs text-gray-500">No logs.</td></tr>` : '';
+            recentTj.forEach(t => {
+                tjContainer.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/20 text-xs text-gray-300">
+                        <td class="p-2.5 font-mono">${t.date}</td>
+                        <td class="p-2.5 font-bold uppercase tracking-wider">${t.ticker || '-'}</td>
+                        <td class="p-2.5"><span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold ${t.direction==='Buy'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${t.direction}</span></td>
+                        <td class="p-2.5"><span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold ${t.outcome==='Profit'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${t.outcome}</span></td>
+                        <td class="p-2.5 font-mono font-bold ${t.outcome==='Profit'?'text-emerald-500':'text-red-500'}">${t.outcome==='Profit'?'+':'-'}${formatCurrency(t.amount)}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        function setSidebarPeriod(p) {
+            sidebarFilterPeriod = p;
+            ['day','month','year'].forEach(id => { document.getElementById('sb-period-' + id).className = "py-1 text-[11px] sm:text-xs font-medium rounded-md transition cursor-pointer text-gray-400"; });
+            document.getElementById('sb-period-' + p).className = "py-1 text-[11px] sm:text-xs font-medium rounded-md transition cursor-pointer bg-gray-700 text-white";
+            renderSidebarPnLMetrics();
+        }
+
+        function renderSidebarPnLMetrics() {
+            const totalContainer = document.getElementById('sb-total-pnl');
+            const winLossContainer = document.getElementById('sb-win-loss-count');
+            const rateContainer = document.getElementById('sb-win-rate');
+            const listContainer = document.getElementById('sb-trades-list');
+            if(!totalContainer || !listContainer) return;
+
+            const today = new Date();
+            const yearStr = today.getFullYear().toString();
+            const monthStr = today.toISOString().substring(0, 7); 
+            const dayStr = today.toISOString().substring(0, 10);
+
+            const filteredTrades = state.trading.filter(t => {
+                if(sidebarFilterPeriod === 'day') return t.date === dayStr;
+                if(sidebarFilterPeriod === 'month') return t.date.substring(0, 7) === monthStr;
+                return t.date.substring(0, 4) === yearStr;
+            });
+
+            let grossProfit = 0, grossLoss = 0, wins = 0, losses = 0;
+            filteredTrades.forEach(t => {
+                const amt = parseFloat(t.amount);
+                if(t.outcome === 'Profit') { grossProfit += amt; wins++; } else { grossLoss += amt; losses++; }
+            });
+
+            const totalNetPnL = grossProfit - grossLoss;
+            totalContainer.innerText = formatCurrency(totalNetPnL);
+            totalContainer.className = `text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${totalNetPnL >= 0 ? 'text-emerald-500' : 'text-red-500'}`;
+            winLossContainer.innerText = `${wins} / ${losses}`;
+            const tCount = wins + losses;
+            rateContainer.innerText = `${tCount > 0 ? Math.round((wins / tCount) * 100) : 0}%`;
+
+            listContainer.innerHTML = filteredTrades.length === 0 ? `<p class="text-[11px] text-gray-500 text-center py-4">No transactions segment.</p>` : '';
+            [...filteredTrades].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+                listContainer.insertAdjacentHTML('beforeend', `
+                    <div class="bg-gray-900/40 border border-gray-700/30 rounded-lg p-2 flex items-center justify-between text-xs text-gray-300">
+                        <div>
+                            <div class="flex items-center gap-1"><span class="font-bold uppercase">${t.ticker || 'ASSET'}</span><span class="text-[9px] px-1 bg-gray-800 text-gray-400 rounded">${t.direction}</span></div>
+                            <span class="text-[9px] text-gray-500 font-mono">${t.date}</span>
+                        </div>
+                        <span class="font-bold font-mono ${t.outcome === 'Profit' ? 'text-emerald-500' : 'text-red-500'}">${t.outcome === 'Profit' ? '+' : '-'}${formatCurrency(t.amount)}</span>
+                    </div>
+                `);
+            });
+        }
+
+        function renderCategories() {
+            const body = document.getElementById('categories-table-body'); if(!body) return;
+            let cats = [...state.categories];
+            if (categorySortConfig.field) {
+                const f = categorySortConfig.field; const d = categorySortConfig.direction === 'asc' ? 1 : -1;
+                cats.sort((a,b) => (a[f]||'').toString().localeCompare((b[f]||'').toString()) * d);
+            }
+            body.innerHTML = cats.length === 0 ? `<tr><td colspan="3" class="p-2 text-center text-gray-500">No entries.</td></tr>` : '';
+            cats.forEach(c => {
+                body.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/20 text-xs">
+                        <td class="p-2 flex items-center gap-1"><span>${c.icon}</span><span>${c.name}</span></td>
+                        <td class="p-2"><span class="px-1.5 py-0.2 rounded text-[9px] font-mono ${c.type==='Income'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${c.type}</span></td>
+                        <td class="p-2 text-right">
+                            <button onclick="editCategory('${c.id}')" class="text-[10px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                            <button onclick="deleteCategory('${c.id}')" class="text-[10px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">Delete</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function toggleCategorySorting(field) {
+            categorySortConfig.direction = (categorySortConfig.field === field && categorySortConfig.direction === 'asc') ? 'desc' : 'asc';
+            categorySortConfig.field = field; renderCategories();
+        }
+
+        function handleCategorySubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('cat-id').value;
+            const name = document.getElementById('cat-name').value.trim();
+            const type = document.getElementById('cat-type').value;
+            const icon = document.getElementById('cat-icon').value.trim() || '📁';
+            const color = document.getElementById('cat-color').value;
+
+            if(id) {
+                const cat = state.categories.find(item => item.id === id);
+                if(cat) Object.assign(cat, { name, type, icon, color });
+            } else {
+                state.categories.push({ id: 'cat-' + Date.now(), name, type, icon, color });
+            }
+            saveStateToLocalStorage(); resetCategoryForm();
+        }
+
+        function editCategory(id) {
+            const cat = state.categories.find(c => c.id === id); if(!cat) return;
+            document.getElementById('cat-id').value = cat.id; document.getElementById('cat-name').value = cat.name;
+            document.getElementById('cat-type').value = cat.type; document.getElementById('cat-icon').value = cat.icon;
+            document.getElementById('cat-color').value = cat.color;
+            document.getElementById('cat-btn-cancel').classList.remove('hidden');
+        }
+
+        function resetCategoryForm() {
+            document.getElementById('category-form').reset(); document.getElementById('cat-id').value = '';
+            document.getElementById('cat-btn-cancel').classList.add('hidden');
+        }
+
+        function deleteCategory(id) {
+            if(confirm("Delete this category structural layout item?")) {
+                state.categories = state.categories.filter(c => c.id !== id); saveStateToLocalStorage();
+            }
+        }
+
+        function renderAssetsTable() {
+            const body = document.getElementById('assets-table-body'); if(!body) return;
+            body.innerHTML = state.assets.length === 0 ? `<tr><td colspan="3" class="p-2 text-center text-gray-500">No assets.</td></tr>` : '';
+            state.assets.forEach(ast => {
+                body.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/20 text-xs">
+                        <td class="p-2 font-bold text-emerald-400 uppercase">${ast.name}</td>
+                        <td class="p-2 text-gray-400 text-[11px]">${ast.assetClass || '-'}</td>
+                        <td class="p-2 text-right">
+                            <button onclick="editAsset('${ast.id}')" class="text-[10px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                            <button onclick="deleteAsset('${ast.id}')" class="text-[10px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">Delete</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function handleAssetSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('ast-id').value;
+            const name = document.getElementById('ast-name').value.trim().toUpperCase();
+            const assetClass = document.getElementById('ast-class').value.trim();
+            if(!name) return;
+
+            if(id) {
+                const ast = state.assets.find(a => a.id === id);
+                if(ast) Object.assign(ast, { name, assetClass });
+            } else {
+                if(state.assets.some(a => a.name === name)) { showToast("Asset ticker string exists.", "error"); return; }
+                state.assets.push({ id: 'ast-' + Date.now(), name, assetClass });
+            }
+            saveStateToLocalStorage(); resetAssetForm();
+        }
+
+        function editAsset(id) {
+            const ast = state.assets.find(a => a.id === id); if(!ast) return;
+            document.getElementById('ast-id').value = ast.id; document.getElementById('ast-name').value = ast.name;
+            document.getElementById('ast-class').value = ast.assetClass || '';
+            document.getElementById('ast-btn-cancel').classList.remove('hidden');
+        }
+
+        function resetAssetForm() {
+            document.getElementById('asset-form').reset(); document.getElementById('ast-id').value = '';
+            document.getElementById('ast-btn-cancel').classList.add('hidden');
+        }
+
+        function deleteAsset(id) {
+            if(confirm("Remove this asset ticker template option?")) {
+                state.assets = state.assets.filter(a => a.id !== id); saveStateToLocalStorage();
+            }
+        }
+
+        function handleCashflowSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('cf-id').value;
+            const date = document.getElementById('cf-date').value;
+            const categoryId = document.getElementById('cf-category').value;
+            let amt = parseFloat(document.getElementById('cf-amount').value);
+            const note = document.getElementById('cf-note').value.trim();
+            const target = state.categories.find(c => c.id === categoryId); if (!target) return;
+
+            if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
+
+            if (id) {
+                const cf = state.cashflow.find(item => item.id === id);
+                if (cf) Object.assign(cf, { date, categoryId, type: target.type, amount: amt, note });
+            } else {
+                state.cashflow.push({ id: 'cf-' + Date.now(), date, categoryId, type: target.type, amount: amt, note });
+            }
+            saveStateToLocalStorage(); resetCashflowForm();
+        }
+
+        function editCashflow(id) {
+            const cf = state.cashflow.find(c => c.id === id); if(!cf) return;
+            const displayAmt = state.settings.currency === 'KHR' ? cf.amount * KHR_MULTIPLIER : cf.amount;
+            document.getElementById('cf-id').value = cf.id; document.getElementById('cf-date').value = cf.date;
+            document.getElementById('cf-category').value = cf.categoryId; document.getElementById('cf-amount').value = displayAmt.toFixed(2);
+            document.getElementById('cf-note').value = cf.note || '';
+            document.getElementById('cf-btn-cancel').classList.remove('hidden');
+        }
+
+        function resetCashflowForm() {
+            document.getElementById('cashflow-form').reset(); document.getElementById('cf-id').value = '';
+            setTodayDatesOnForms(); document.getElementById('cf-btn-cancel').classList.add('hidden');
+        }
+
+        function deleteCashflow(id) {
+            if (confirm("Delete ledger log database entry row?")) {
+                state.cashflow = state.cashflow.filter(c => c.id !== id); saveStateToLocalStorage();
+            }
+        }
+
+        function renderCashflow() {
+            const body = document.getElementById('cashflow-table-body'); if(!body) return;
+            const fStart = document.getElementById('filter-cf-start').value; const fEnd = document.getElementById('filter-cf-end').value;
+            const fType = document.getElementById('filter-cf-type').value; const fCat = document.getElementById('filter-cf-category').value;
+
+            let filtered = [...state.cashflow];
+            if(fStart) filtered = filtered.filter(c => c.date >= fStart); if(fEnd) filtered = filtered.filter(c => c.date <= fEnd);
+            if(fType) filtered = filtered.filter(c => c.type === fType); if(fCat) filtered = filtered.filter(c => c.categoryId === fCat);
+            filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            body.innerHTML = filtered.length === 0 ? `<tr><td colspan="6" class="p-4 text-center text-gray-500 text-xs">No records.</td></tr>` : '';
+            filtered.forEach(c => {
+                const cat = state.categories.find(item => item.id === c.categoryId) || { name: 'Transfer Node', icon: '🔄' };
+                const isSystem = c.linkedReferenceId ? true : false;
+                body.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/30 text-xs text-gray-300">
+                        <td class="p-3 font-mono">${c.date}</td>
+                        <td class="p-3 flex items-center gap-1.5"><span>${cat.icon}</span><span>${cat.name}</span></td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.type==='Income'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${c.type}</span></td>
+                        <td class="p-3 font-mono font-semibold ${c.type==='Income'?'text-emerald-500':'text-red-500'}">${c.type==='Income'?'+':'-'}${formatCurrency(c.amount)}</td>
+                        <td class="p-3 text-gray-400 truncate max-w-[150px] sm:max-w-[200px]">${c.note || '-'} ${isSystem ? '<span class="text-[9px] bg-blue-950 text-blue-400 px-1 rounded">LINKED</span>':''}</td>
+                        <td class="p-3 text-right">
+                            ${isSystem ? '<span class="text-[10px] text-gray-500 italic">Managed via Capital Tab</span>' : `
+                                <div class="flex justify-end gap-1">
+                                    <button onclick="editCashflow('${c.id}')" class="text-xs bg-gray-700 text-white px-2 py-0.5 rounded cursor-pointer">Edit</button>
+                                    <button onclick="deleteCashflow('${c.id}')" class="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded cursor-pointer">Delete</button>
+                                </div>
+                            `}
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function handleTradingSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('tj-id').value;
+            const date = document.getElementById('tj-date').value;
+            const direction = document.getElementById('tj-direction').value;
+            const outcome = document.getElementById('tj-outcome').value;
+            const ticker = document.getElementById('tj-ticker-select').value;
+            let amt = parseFloat(document.getElementById('tj-amount').value);
+            const note = document.getElementById('tj-note').value.trim();
+
+            if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
+
+            if(id) {
+                const t = state.trading.find(item => item.id === id);
+                if(t) Object.assign(t, { date, direction, outcome, amount: amt, ticker, note });
+            } else {
+                state.trading.push({ id: 'tj-' + Date.now(), date, direction, outcome, amount: amt, ticker, note });
+            }
+            saveStateToLocalStorage(); resetTradingForm();
+        }
+
+        function editTrading(id) {
+            const t = state.trading.find(item => item.id === id); if(!t) return;
+            const displayAmt = state.settings.currency === 'KHR' ? t.amount * KHR_MULTIPLIER : t.amount;
+            document.getElementById('tj-id').value = t.id; document.getElementById('tj-date').value = t.date;
+            document.getElementById('tj-direction').value = t.direction; document.getElementById('tj-outcome').value = t.outcome;
+            document.getElementById('tj-amount').value = displayAmt.toFixed(2); document.getElementById('tj-ticker-select').value = t.ticker;
+            document.getElementById('tj-note').value = t.note || '';
+            document.getElementById('tj-btn-cancel').classList.remove('hidden');
+        }
+
+        function resetTradingForm() {
+            document.getElementById('trading-form').reset(); document.getElementById('tj-id').value = '';
+            setTodayDatesOnForms(); document.getElementById('tj-btn-cancel').classList.add('hidden');
+        }
+
+        function deleteTrading(id) {
+            if(confirm("Erase trading journal statement structural record row node?")) {
+                state.trading = state.trading.filter(item => item.id !== id); saveStateToLocalStorage();
+            }
+        }
+
+        function renderTrading() {
+            const body = document.getElementById('trading-table-body'); if(!body) return;
+            const sorted = [...state.trading].sort((a,b) => new Date(b.date) - new Date(a.date));
+            body.innerHTML = sorted.length === 0 ? `<tr><td colspan="7" class="p-4 text-center text-gray-500 text-xs">No records.</td></tr>` : '';
+            sorted.forEach(t => {
+                body.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/30 text-xs text-gray-300">
+                        <td class="p-3 font-mono">${t.date}</td>
+                        <td class="p-3 font-bold uppercase tracking-wider text-emerald-400">${t.ticker || '-'}</td>
+                        <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${t.direction==='Buy'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${t.direction}</span></td>
+                        <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${t.outcome==='Profit'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${t.outcome}</span></td>
+                        <td class="p-3 font-mono font-bold ${t.outcome==='Profit'?'text-emerald-500':'text-red-500'}">${t.outcome==='Profit'?'+':'-'}${formatCurrency(t.amount)}</td>
+                        <td class="p-3 text-gray-400 truncate max-w-[140px] sm:max-w-[180px]">${t.note || '-'}</td>
+                        <td class="p-3 text-right">
+                            <div class="flex justify-end gap-1">
+                                <button onclick="editTrading('${t.id}')" class="text-xs bg-gray-700 text-white px-2 py-0.5 rounded cursor-pointer">Edit</button>
+                                <button onclick="deleteTrading('${t.id}')" class="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded cursor-pointer">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function ensureSystemCategoryExists(name, type) {
+            let cat = state.categories.find(c => c.name === name && c.type === type);
+            if (!cat) { cat = { id: 'cat-sys-' + Date.now() + Math.floor(Math.random()*100), name, type, icon: '🔄', color: '#6B7280' }; state.categories.push(cat); }
+            return cat;
+        }
+
+        function handleCapitalSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('cap-id').value;
+            const date = document.getElementById('cap-date').value;
+            let amt = parseFloat(document.getElementById('cap-amount').value);
+            const note = document.getElementById('cap-note').value.trim();
+            const finalNote = note || "Trading portfolio funding allocation reference";
+
+            if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
+
+            const metrics = calculateFinancialBalances();
+            const existingAmt = id ? (state.capital.find(c => c.id === id)?.amount || 0) : 0;
+            if ((metrics.bankAccountBalance + existingAmt) < amt) { showToast("Insufficient bank treasury resources.", "error"); return; }
+
+            const sysCat = ensureSystemCategoryExists("Capital Investment Transfer", "Expense");
+
+            if(id) {
+                const cap = state.capital.find(c => c.id === id);
+                if(cap) Object.assign(cap, { amount: amt, date, note: finalNote });
+                const cf = state.cashflow.find(f => f.linkedReferenceId === id);
+                if(cf) Object.assign(cf, { date, categoryId: sysCat.id, amount: amt, note: `Funding to trading account: ${finalNote}` });
+                showToast("Funding ledger parameter structural modified.");
+            } else {
+                const capId = 'cap-' + Date.now();
+                state.capital.push({ id: capId, amount: amt, date, note: finalNote });
+                state.cashflow.push({ id: 'cf-auto-cap-' + Date.now(), date, categoryId: sysCat.id, type: 'Expense', amount: amt, note: `Funding to trading account: ${finalNote}`, linkedReferenceId: capId });
+                showToast("Capital injected successfully.");
+            }
+            saveStateToLocalStorage(); resetCapitalForm();
+        }
+
+        function editCapital(id) {
+            const cap = state.capital.find(c => c.id === id); if(!cap) return;
+            const displayAmt = state.settings.currency === 'KHR' ? cap.amount * KHR_MULTIPLIER : cap.amount;
+            document.getElementById('cap-id').value = cap.id; document.getElementById('cap-date').value = cap.date;
+            document.getElementById('cap-amount').value = displayAmt.toFixed(2); document.getElementById('cap-note').value = cap.note || '';
+            document.getElementById('cap-form-heading').innerText = "Modify Capital Funding Node";
+            document.getElementById('cap-btn-cancel').classList.remove('hidden');
+        }
+
+        function resetCapitalForm() {
+            document.getElementById('capital-form').reset(); document.getElementById('cap-id').value = '';
+            document.getElementById('cap-form-heading').innerText = "Funding Capital (Bank → Trade Account)";
+            setTodayDatesOnForms(); document.getElementById('cap-btn-cancel').classList.add('hidden');
+        }
+
+        function deleteCapitalEntry(id) {
+            if(confirm("Delete specific operational injection row? Linked cash flow item will be removed.")) {
+                state.capital = state.capital.filter(c => c.id !== id);
+                state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
+                saveStateToLocalStorage(); resetCapitalForm();
+            }
+        }
+
+        function handleWithdrawalSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('wth-id').value;
+            const date = document.getElementById('wth-date').value;
+            let amt = parseFloat(document.getElementById('wth-amount').value);
+            const note = document.getElementById('wth-note').value.trim();
+            const finalNote = note || "Trading account withdrawal extraction";
+
+            if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
+
+            const metrics = calculateFinancialBalances();
+            const existingAmt = id ? (state.withdraw.find(w => w.id === id)?.amount || 0) : 0;
+            if ((metrics.tradingAccountBalance + existingAmt) < amt) { showToast("Insufficient capital resources pools.", "error"); return; }
+
+            const sysCat = ensureSystemCategoryExists("Trading Withdrawal", "Income");
+
+            if(id) {
+                const wth = state.withdraw.find(w => w.id === id);
+                if(wth) Object.assign(wth, { amount: amt, date, note: finalNote });
+                const cf = state.cashflow.find(f => f.linkedReferenceId === id);
+                if(cf) Object.assign(cf, { date, categoryId: sysCat.id, amount: amt, note: `Withdrawal from trading account: ${finalNote}` });
+                showToast("Extraction metrics localized changes processed.");
+            } else {
+                const wthId = 'wth-' + Date.now();
+                state.withdraw.push({ id: wthId, amount: amt, date, note: finalNote });
+                state.cashflow.push({ id: 'cf-auto-wth-' + Date.now(), date, categoryId: sysCat.id, type: 'Income', amount: amt, note: `Withdrawal from trading account: ${finalNote}`, linkedReferenceId: wthId });
+                showToast("Withdrawal allocation resolved.");
+            }
+            saveStateToLocalStorage(); resetWithdrawForm();
+        }
+
+        function editWithdraw(id) {
+            const wth = state.withdraw.find(w => w.id === id); if(!wth) return;
+            const displayAmt = state.settings.currency === 'KHR' ? wth.amount * KHR_MULTIPLIER : wth.amount;
+            document.getElementById('wth-id').value = wth.id; document.getElementById('wth-date').value = wth.date;
+            document.getElementById('wth-amount').value = displayAmt.toFixed(2); document.getElementById('wth-note').value = wth.note || '';
+            document.getElementById('wth-form-heading').innerText = "Adjust Extraction Funds Records";
+            document.getElementById('wth-btn-cancel').classList.remove('hidden');
+        }
+
+        function resetWithdrawForm() {
+            document.getElementById('withdraw-form').reset(); document.getElementById('wth-id').value = '';
+            document.getElementById('wth-form-heading').innerText = "Extract Funds (Trade Account → Bank)";
+            setTodayDatesOnForms(); document.getElementById('wth-btn-cancel').classList.add('hidden');
+        }
+
+        function deleteWithdrawal(id) {
+            if(confirm("Remove allocation transaction backup statement row?")) {
+                state.withdraw = state.withdraw.filter(w => w.id !== id);
+                state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
+                saveStateToLocalStorage(); resetWithdrawForm();
+            }
+        }
+
+        function renderCapitalAccountModules() {
+            const capBody = document.getElementById('capital-table-body');
+            const wthBody = document.getElementById('withdraw-table-body');
+
+            if(capBody) {
+                capBody.innerHTML = state.capital.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500 text-xs">No capital injections.</td></tr>` : '';
+                [...state.capital].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(c => {
+                    capBody.insertAdjacentHTML('beforeend', `
+                        <tr class="border-b border-gray-700/30 text-xs text-gray-300">
+                            <td class="p-3 font-mono">${c.date}</td>
+                            <td class="p-3 font-semibold text-blue-400">${formatCurrency(c.amount)}</td>
+                            <td class="p-3 text-gray-400 truncate max-w-[100px] sm:max-w-[120px]">${c.note}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="editCapital('${c.id}')" class="text-xs text-emerald-400 hover:underline mr-2 cursor-pointer">Edit</button>
+                                <button onclick="deleteCapitalEntry('${c.id}')" class="text-xs text-red-400 hover:underline cursor-pointer">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+
+            if(wthBody) {
+                wthBody.innerHTML = state.withdraw.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500 text-xs">No extractions.</td></tr>` : '';
+                [...state.withdraw].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(w => {
+                    wthBody.insertAdjacentHTML('beforeend', `
+                        <tr class="border-b border-gray-700/30 text-xs text-gray-300">
+                            <td class="p-3 font-mono">${w.date}</td>
+                            <td class="p-3 font-semibold text-purple-400">${formatCurrency(w.amount)}</td>
+                            <td class="p-3 text-gray-400 truncate max-w-[100px] sm:max-w-[120px]">${w.note}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="editWithdraw('${w.id}')" class="text-xs text-emerald-400 hover:underline mr-2 cursor-pointer">Edit</button>
+                                <button onclick="deleteWithdrawal('${w.id}')" class="text-xs text-red-400 hover:underline cursor-pointer">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+        }
+
+        function renderPerformanceCalendar() {
+            const grid = document.getElementById('calendar-grid'); if(!grid) return;
+            const targetYear = parseInt(document.getElementById('cal-year-select').value);
+            const targetMonth = parseInt(document.getElementById('cal-month-select').value);
+
+            grid.innerHTML = '';
+            const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
+            const totalDays = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+            for(let i = 0; i < firstDayIndex; i++) { 
+                grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-800/20 rounded-xl min-h-[55px] sm:min-h-[75px]"></div>`); 
+            }
+
+            const dailyMap = {};
+            state.trading.forEach(t => {
+                const d = new Date(t.date);
+                if(d.getFullYear() === targetYear && d.getMonth() === targetMonth) {
+                    const dayNum = d.getDate(); if(!dailyMap[dayNum]) dailyMap[dayNum] = { pnl: 0, count: 0 };
+                    const amt = parseFloat(t.amount);
+                    dailyMap[dayNum].pnl += (t.outcome === 'Profit' ? amt : -amt); dailyMap[dayNum].count++;
+                }
+            });
+
+            for(let day = 1; day <= totalDays; day++) {
+                const dayData = dailyMap[day] || { pnl: 0, count: 0 };
+                let bgStateClass = 'bg-gray-800/60 border-gray-700/50';
+                let textPnLColor = 'text-gray-400';
+                
+                if (dayData.count > 0) {
+                    if (dayData.pnl > 0.001) { bgStateClass = 'bg-emerald-950/40 border-emerald-500/30'; textPnLColor = 'text-emerald-400 font-bold'; }
+                    else if (dayData.pnl < -0.001) { bgStateClass = 'bg-red-950/40 border-red-500/30'; textPnLColor = 'text-red-400 font-bold'; }
+                    else { bgStateClass = 'bg-blue-950/40 border-blue-500/30'; textPnLColor = 'text-blue-400 font-bold'; }
+                }
+
+                grid.insertAdjacentHTML('beforeend', `
+                    <div class="border rounded-xl p-1.5 sm:p-2 min-h-[55px] sm:min-h-[75px] text-left flex flex-col justify-between transition-all hover:scale-[1.02] ${bgStateClass}">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] sm:text-xs font-mono font-bold text-gray-400">${day}</span>
+                            ${dayData.count > 0 ? `<span class="text-[8px] px-0.5 sm:px-1 bg-gray-900 rounded-sm text-gray-400 font-mono">#${dayData.count}</span>`:''}
+                        </div>
+                        <div class="text-[9px] sm:text-[10px] font-mono tracking-tight text-right truncate ${textPnLColor}">
+                            ${dayData.count > 0 ? (dayData.pnl >= 0 ? '+' : '') + formatCurrency(dayData.pnl) : '-'}
+                        </div>
+                    </div>
+                `);
+            }
+        }
+
+        function renderChartsEngine() {
+            const canvas = document.getElementById('cashflowChart'); if(!canvas) return;
+            const ctx = canvas.getContext('2d'); const isKhr = state.settings.currency === 'KHR';
+            const aggregates = {};
+
+            state.cashflow.forEach(c => {
+                const m = c.date.substring(0, 7); if(!aggregates[m]) aggregates[m] = { income: 0, expense: 0 };
+                const calc = isKhr ? parseFloat(c.amount) * KHR_MULTIPLIER : parseFloat(c.amount);
+                if(c.type === 'Income') aggregates[m].income += calc; else aggregates[m].expense += calc;
+            });
+
+            const sortedMonths = Object.keys(aggregates).sort();
+            if (cashflowChartInstance) cashflowChartInstance.destroy();
+
+            cashflowChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [
+                        { label: state.settings.lang === 'kh' ? 'ចំណូល (+)':'Income (+)', data: sortedMonths.map(m => aggregates[m].income), backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: '#10B981', borderWidth: 1, borderRadius: 4 },
+                        { label: state.settings.lang === 'kh' ? 'ចំណាយ (-)':'Expense (-)', data: sortedMonths.map(m => aggregates[m].expense), backgroundColor: 'rgba(239, 68, 68, 0.7)', borderColor: '#EF4444', borderWidth: 1, borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: 'rgba(75,85,99,0.1)' }, ticks: { color: '#9CA3AF', font: { size: 9 } } }, y: { grid: { color: 'rgba(75,85,99,0.1)' }, ticks: { color: '#9CA3AF', font: { size: 9 } } } }, plugins: { legend: { labels: { color: '#9CA3AF', font: { size: 10 } } } } }
+            });
+        }
+
+        function setTodayDatesOnForms() {
+            const todayStr = new Date().toISOString().substring(0, 10);
+            ['cf-date', 'tj-date', 'cap-date', 'wth-date'].forEach(id => { const el = document.getElementById(id); if(el && !el.value) el.value = todayStr; });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStateFromLocalStorage(); initializeDefaultCategoriesAndAssets(); populateYearsCalendarSelectors(); setTodayDatesOnForms(); syncSettingsInputFormFields(); refreshApplicationUiViewEngines();
+        });
+    </script>
+</body>
+</html>
