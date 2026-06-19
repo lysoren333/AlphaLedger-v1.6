@@ -183,6 +183,55 @@
         </section>
 
         <section id="tab-cashflow" class="hidden space-y-4 sm:space-y-6">
+            <!-- New Enhanced Dynamic Spending Horizon Module -->
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-sm sm:text-base lg:text-lg font-bold text-white flex items-center gap-2">
+                            <span>🛍️</span> <span>Spending Horizon Controller</span>
+                        </h3>
+                        <p class="text-[11px] text-gray-400">View real-time spending metrics and summaries across timeframes.</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 bg-gray-900 p-1 rounded-lg w-full sm:w-auto">
+                        <button onclick="setSpendingPeriod('day')" id="sp-period-day" class="px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer bg-gray-700 text-white">Day</button>
+                        <button onclick="setSpendingPeriod('month')" id="sp-period-month" class="px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer text-gray-400">Month</button>
+                        <button onclick="setSpendingPeriod('year')" id="sp-period-year" class="px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer text-gray-400">Year</button>
+                    </div>
+                </div>
+
+                <!-- Spending Horizon Summaries -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700/50">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Total Spending (Selected Horizon)</p>
+                        <h4 id="sp-summary-total" class="text-lg sm:text-xl font-bold mt-1 text-red-400">$0.00</h4>
+                    </div>
+                    <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700/50">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Highest Spending Category</p>
+                        <h4 id="sp-summary-highest-cat" class="text-sm sm:text-base font-bold mt-1.5 text-white">None</h4>
+                    </div>
+                    <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700/50">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Transaction Volume</p>
+                        <h4 id="sp-summary-count" class="text-lg sm:text-xl font-bold mt-1 text-emerald-400">0 Entries</h4>
+                    </div>
+                </div>
+
+                <!-- Detail Horizon Breakdown Table Grid -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-gray-300">
+                        <thead class="bg-gray-700/40 text-gray-400 text-[10px] uppercase font-mono">
+                            <tr>
+                                <th class="p-2 rounded-l-lg">Horizon Window Date</th>
+                                <th class="p-2">Category Asset Node</th>
+                                <th class="p-2">Transaction Type</th>
+                                <th class="p-2">Calculated Spending Amount</th>
+                                <th class="p-2 rounded-r-lg">Descriptor Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="spending-horizon-details-table" class="divide-y divide-gray-700/20"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
                 <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-white mb-4" data-i18n="cfChartTitle">Income vs Expense Tracking</h3>
                 <div class="h-[200px] sm:h-[240px] w-full">
@@ -345,7 +394,7 @@
                         <select id="cal-month-select" onchange="renderPerformanceCalendar()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500">
                             <option value="0">January</option><option value="1">February</option><option value="2">March</option>
                             <option value="3">April</option><option value="4">May</option><option value="5">June</option>
-                            <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                            <option value="6">July</option><option value="7">August</option><option value="8 September">September</option>
                             <option value="9">October</option><option value="10">November</option><option value="11">December</option>
                         </select>
                     </div>
@@ -650,6 +699,7 @@
 
         const KHR_MULTIPLIER = 4000;
         let sidebarFilterPeriod = 'day'; 
+        let spendingFilterPeriod = 'day'; // New Variable to track selected time scale
         let cashflowChartInstance = null;
         let categorySortConfig = { field: null, direction: 'asc' };
 
@@ -727,7 +777,6 @@
             document.getElementById('system-instruction-banner').style.display = 'none';
         }
 
-        // Automatic dismissal logic for the manual banner [source: 1]
         window.addEventListener('DOMContentLoaded', () => {
             loadStateFromLocalStorage();
             initializeDefaultCategoriesAndAssets();
@@ -923,7 +972,6 @@
             reader.readAsText(file);
         }
 
-        /* FEATURE 2 INTEGRATION: JSON upload verification parsing loops containing "Category" fields */
         function importIsolatedCashflowJson(event) {
             const file = event.target.files[0]; if(!file) return;
             const reader = new FileReader();
@@ -980,7 +1028,6 @@
             reader.readAsText(file);
         }
 
-        /* FEATURE 3 INTEGRATION: Flexible Time Horizon Batch Deletion Engine */
         function purgeDataByHorizon(horizon) {
             const targetDateStr = document.getElementById('purge-target-date').value;
             if (!targetDateStr) {
@@ -1079,7 +1126,10 @@
                 menu.classList.add('hidden');
                 actions.classList.add('hidden');
             }
-            if(tabId === 'cashflow') renderChartsEngine();
+            if(tabId === 'cashflow') {
+                renderChartsEngine();
+                renderSpendingHorizonEngine();
+            }
             if(tabId === 'calendar') renderPerformanceCalendar();
         }
 
@@ -1090,6 +1140,77 @@
             document.getElementById('card-net-worth').innerText = formatCurrency(balances.totalNetWorth);
             applyLanguageSettingsDictionary(); renderAvatarComponentElements(); populateSortedDropdownSelectors();
             renderDashboardTables(); renderCashflow(); renderTrading(); renderCapitalAccountModules(); renderCategories(); renderAssetsTable(); renderSidebarPnLMetrics(); renderPerformanceCalendar();
+            renderSpendingHorizonEngine(); // Execute new spending layout loop
+        }
+
+        // New Logic Block to calculate and present Spending Summaries & Detailed Data Rows
+        function setSpendingPeriod(period) {
+            spendingFilterPeriod = period;
+            ['day','month','year'].forEach(p => {
+                document.getElementById('sp-period-' + p).className = "px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer text-gray-400";
+            });
+            document.getElementById('sp-period-' + period).className = "px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer bg-gray-700 text-white";
+            renderSpendingHorizonEngine();
+        }
+
+        function renderSpendingHorizonEngine() {
+            const summaryTotal = document.getElementById('sp-summary-total');
+            const summaryHighest = document.getElementById('sp-summary-highest-cat');
+            const summaryCount = document.getElementById('sp-summary-count');
+            const tableBody = document.getElementById('spending-horizon-details-table');
+            if(!tableBody) return;
+
+            const today = new Date();
+            const yearString = today.getFullYear().toString();
+            const monthString = today.toISOString().substring(0, 7);
+            const dayString = today.toISOString().substring(0, 10);
+
+            // Filter entries to match chosen horizon window string segment and type explicitly set to Expense
+            const spendingEntries = state.cashflow.filter(item => {
+                if(item.type !== 'Expense') return false;
+                if(spendingFilterPeriod === 'day') return item.date === dayString;
+                if(spendingFilterPeriod === 'month') return item.date.substring(0, 7) === monthString;
+                return item.date.substring(0, 4) === yearString;
+            });
+
+            let totalSpent = 0;
+            let categoryGroupingMap = {};
+
+            tableBody.innerHTML = spendingEntries.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-gray-500 italic">No spending records identified within this specific window.</td></tr>` : '';
+            
+            spendingEntries.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+                const cat = state.categories.find(c => c.id === item.categoryId) || { name: 'Unassigned', icon: '🛒' };
+                totalSpent += parseFloat(item.amount);
+
+                if(!categoryGroupingMap[cat.name]) {
+                    categoryGroupingMap[cat.name] = 0;
+                }
+                categoryGroupingMap[cat.name] += parseFloat(item.amount);
+
+                tableBody.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/20 text-xs text-gray-300 hover:bg-gray-800/30 transition">
+                        <td class="p-2 font-mono text-gray-400">${item.date}</td>
+                        <td class="p-2 font-medium flex items-center gap-1"><span>${cat.icon}</span> <span>${cat.name}</span></td>
+                        <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold bg-red-500/10 text-red-400">EXPENSE</span></td>
+                        <td class="p-2 font-bold font-mono text-red-400">-${formatCurrency(item.amount)}</td>
+                        <td class="p-2 text-gray-400 truncate max-w-[200px]">${item.note || '-'}</td>
+                    </tr>
+                `);
+            });
+
+            // Identify maximum category spending cluster
+            let topCatName = "None";
+            let topCatVal = 0;
+            for(let name in categoryGroupingMap) {
+                if(categoryGroupingMap[name] > topCatVal) {
+                    topCatVal = categoryGroupingMap[name];
+                    topCatName = name;
+                }
+            }
+
+            summaryTotal.innerText = formatCurrency(totalSpent);
+            summaryHighest.innerText = topCatName !== "None" ? `${topCatName} (${formatCurrency(topCatVal)})` : "None";
+            summaryCount.innerText = `${spendingEntries.length} Records`;
         }
 
         function renderDashboardTables() {
@@ -1435,7 +1556,10 @@
 
         function ensureSystemCategoryExists(name, type) {
             let cat = state.categories.find(c => c.name === name && c.type === type);
-            if (!cat) { cat = { id: 'cat-sys-' + Date.now() + Math.floor(Math.random()*100), name, type, icon: '🔄', color: '#6B7280' }; state.categories.push(cat); }
+            if (!cat) {
+                cat = { id: 'cat-sys-' + Date.now() + Math.floor(Math.random()*100), name, type, icon: '🔄', color: '#4B5563' };
+                state.categories.push(cat);
+            }
             return cat;
         }
 
@@ -1445,51 +1569,53 @@
             const date = document.getElementById('cap-date').value;
             let amt = parseFloat(document.getElementById('cap-amount').value);
             const note = document.getElementById('cap-note').value.trim();
-            const finalNote = note || "Trading portfolio funding allocation reference";
 
             if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
-
-            const metrics = calculateFinancialBalances();
-            const existingAmt = id ? (state.capital.find(c => c.id === id)?.amount || 0) : 0;
-            if ((metrics.bankAccountBalance + existingAmt) < amt) { showToast("Insufficient bank treasury resources.", "error"); return; }
-
-            const sysCat = ensureSystemCategoryExists("Capital Investment Transfer", "Expense");
+            const cat = ensureSystemCategoryExists('Broker Funding Trans', 'Expense');
 
             if(id) {
-                const cap = state.capital.find(c => c.id === id);
-                if(cap) Object.assign(cap, { amount: amt, date, note: finalNote });
-                const cf = state.cashflow.find(f => f.linkedReferenceId === id);
-                if(cf) Object.assign(cf, { date, categoryId: sysCat.id, amount: amt, note: `Funding to trading account: ${finalNote}` });
-                showToast("Funding ledger parameter structural modified.");
+                const c = state.capital.find(item => item.id === id);
+                if(c) {
+                    Object.assign(c, { date, amount: amt, note });
+                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === c.id);
+                    if(linked) Object.assign(linked, { date, amount: amt, note: note || 'Capital injected to broker loop' });
+                }
             } else {
-                const capId = 'cap-' + Date.now();
-                state.capital.push({ id: capId, amount: amt, date, note: finalNote });
-                state.cashflow.push({ id: 'cf-auto-cap-' + Date.now(), date, categoryId: sysCat.id, type: 'Expense', amount: amt, note: `Funding to trading account: ${finalNote}`, linkedReferenceId: capId });
-                showToast("Capital injected successfully.");
+                const newId = 'cap-' + Date.now();
+                state.capital.push({ id: newId, date, amount: amt, note });
+                state.cashflow.push({
+                    id: 'cf-link-' + Date.now(),
+                    date,
+                    categoryId: cat.id,
+                    type: 'Expense',
+                    amount: amt,
+                    note: note || 'Capital injected to broker loop',
+                    linkedReferenceId: newId
+                });
             }
             saveStateToLocalStorage(); resetCapitalForm();
         }
 
         function editCapital(id) {
-            const cap = state.capital.find(c => c.id === id); if(!cap) return;
-            const displayAmt = state.settings.currency === 'KHR' ? cap.amount * KHR_MULTIPLIER : cap.amount;
-            document.getElementById('cap-id').value = cap.id; document.getElementById('cap-date').value = cap.date;
-            document.getElementById('cap-amount').value = displayAmt.toFixed(2); document.getElementById('cap-note').value = cap.note || '';
-            document.getElementById('cap-form-heading').innerText = "Modify Capital Funding Node";
+            const c = state.capital.find(item => item.id === id); if(!c) return;
+            const displayAmt = state.settings.currency === 'KHR' ? c.amount * KHR_MULTIPLIER : c.amount;
+            document.getElementById('cap-id').value = c.id; document.getElementById('cap-date').value = c.date;
+            document.getElementById('cap-amount').value = displayAmt.toFixed(2); document.getElementById('cap-note').value = c.note || '';
             document.getElementById('cap-btn-cancel').classList.remove('hidden');
+            document.getElementById('cap-btn-submit').innerText = "Update Capital";
         }
 
         function resetCapitalForm() {
             document.getElementById('capital-form').reset(); document.getElementById('cap-id').value = '';
-            document.getElementById('cap-form-heading').innerText = "Funding Capital (Bank → Trade Account)";
             setTodayDatesOnForms(); document.getElementById('cap-btn-cancel').classList.add('hidden');
+            document.getElementById('cap-btn-submit').innerText = "Inject Capital";
         }
 
-        function deleteCapitalEntry(id) {
-            if(confirm("Delete specific operational injection row? Linked cash flow item will be removed.")) {
+        function deleteCapital(id) {
+            if(confirm("Erase funding entry trace across layers?")) {
                 state.capital = state.capital.filter(c => c.id !== id);
                 state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
-                saveStateToLocalStorage(); resetCapitalForm();
+                saveStateToLocalStorage();
             }
         }
 
@@ -1499,208 +1625,208 @@
             const date = document.getElementById('wth-date').value;
             let amt = parseFloat(document.getElementById('wth-amount').value);
             const note = document.getElementById('wth-note').value.trim();
-            const finalNote = note || "Trading account withdrawal extraction";
 
             if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
-
-            const metrics = calculateFinancialBalances();
-            const existingAmt = id ? (state.withdraw.find(w => w.id === id)?.amount || 0) : 0;
-            if ((metrics.tradingAccountBalance + existingAmt) < amt) { showToast("Insufficient capital resources pools.", "error"); return; }
-
-            const sysCat = ensureSystemCategoryExists("Trading Withdrawal", "Income");
+            const cat = ensureSystemCategoryExists('Broker Profit Return', 'Income');
 
             if(id) {
-                const wth = state.withdraw.find(w => w.id === id);
-                if(wth) Object.assign(wth, { amount: amt, date, note: finalNote });
-                const cf = state.cashflow.find(f => f.linkedReferenceId === id);
-                if(cf) Object.assign(cf, { date, categoryId: sysCat.id, amount: amt, note: `Withdrawal from trading account: ${finalNote}` });
-                showToast("Extraction metrics localized changes processed.");
+                const w = state.withdraw.find(item => item.id === id);
+                if(w) {
+                    Object.assign(w, { date, amount: amt, note });
+                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === w.id);
+                    if(linked) Object.assign(linked, { date, amount: amt, note: note || 'Extracted broker treasury capital back into bank' });
+                }
             } else {
-                const wthId = 'wth-' + Date.now();
-                state.withdraw.push({ id: wthId, amount: amt, date, note: finalNote });
-                state.cashflow.push({ id: 'cf-auto-wth-' + Date.now(), date, categoryId: sysCat.id, type: 'Income', amount: amt, note: `Withdrawal from trading account: ${finalNote}`, linkedReferenceId: wthId });
-                showToast("Withdrawal allocation resolved.");
+                const newId = 'wth-' + Date.now();
+                state.withdraw.push({ id: newId, date, amount: amt, note });
+                state.cashflow.push({
+                    id: 'cf-link-' + Date.now(),
+                    date,
+                    categoryId: cat.id,
+                    type: 'Income',
+                    amount: amt,
+                    note: note || 'Extracted broker treasury capital back into bank',
+                    linkedReferenceId: newId
+                });
             }
             saveStateToLocalStorage(); resetWithdrawForm();
         }
 
         function editWithdraw(id) {
-            const wth = state.withdraw.find(w => w.id === id); if(!wth) return;
-            const displayAmt = state.settings.currency === 'KHR' ? wth.amount * KHR_MULTIPLIER : wth.amount;
-            document.getElementById('wth-id').value = wth.id; document.getElementById('wth-date').value = wth.date;
-            document.getElementById('wth-amount').value = displayAmt.toFixed(2); document.getElementById('wth-note').value = wth.note || '';
-            document.getElementById('wth-form-heading').innerText = "Adjust Extraction Funds Records";
+            const w = state.withdraw.find(item => item.id === id); if(!w) return;
+            const displayAmt = state.settings.currency === 'KHR' ? w.amount * KHR_MULTIPLIER : w.amount;
+            document.getElementById('wth-id').value = w.id; document.getElementById('wth-date').value = w.date;
+            document.getElementById('wth-amount').value = displayAmt.toFixed(2); document.getElementById('wth-note').value = w.note || '';
             document.getElementById('wth-btn-cancel').classList.remove('hidden');
+            document.getElementById('wth-btn-submit').innerText = "Update Withdrawal";
         }
 
         function resetWithdrawForm() {
             document.getElementById('withdraw-form').reset(); document.getElementById('wth-id').value = '';
-            document.getElementById('wth-form-heading').innerText = "Extract Funds (Trade Account → Bank)";
             setTodayDatesOnForms(); document.getElementById('wth-btn-cancel').classList.add('hidden');
+            document.getElementById('wth-btn-submit').innerText = "Request Withdrawal";
         }
 
-        function deleteWithdrawEntry(id) {
-            if(confirm("Erase requested withdrawal item track node?")) {
+        function deleteWithdraw(id) {
+            if(confirm("Erase extraction row?")) {
                 state.withdraw = state.withdraw.filter(w => w.id !== id);
                 state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
-                saveStateToLocalStorage(); resetWithdrawForm();
+                saveStateToLocalStorage();
             }
         }
 
         function renderCapitalAccountModules() {
             const capBody = document.getElementById('capital-table-body');
             const wthBody = document.getElementById('withdraw-table-body');
-            if(!capBody || !wthBody) return;
+            
+            if(capBody) {
+                const sCap = [...state.capital].sort((a,b)=>new Date(b.date)-new Date(a.date));
+                capBody.innerHTML = sCap.length === 0 ? `<tr><td colspan="4" class="p-3 text-center text-gray-500">No data.</td></tr>` : '';
+                sCap.forEach(c => {
+                    capBody.insertAdjacentHTML('beforeend', `
+                        <tr class="border-b border-gray-700/20 text-xs text-gray-300">
+                            <td class="p-3 font-mono">${c.date}</td>
+                            <td class="p-3 font-bold text-blue-400">${formatCurrency(c.amount)}</td>
+                            <td class="p-3 text-gray-400 truncate max-w-[120px]">${c.note || '-'}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="editCapital('${c.id}')" class="text-[11px] bg-gray-700 px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                                <button onclick="deleteCapital('${c.id}')" class="text-[11px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">X</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
 
-            capBody.innerHTML = state.capital.length === 0 ? `<tr><td colspan="4" class="p-3 text-center text-xs text-gray-500">No capital injections logged.</td></tr>` : '';
-            [...state.capital].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(c => {
-                capBody.insertAdjacentHTML('beforeend', `
-                    <tr class="border-b border-gray-700/20 text-xs text-gray-300">
-                        <td class="p-3 font-mono">${c.date}</td>
-                        <td class="p-3 text-blue-400 font-bold font-mono">+${formatCurrency(c.amount)}</td>
-                        <td class="p-3 text-gray-400 truncate max-w-[120px]">${c.note || '-'}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="editCapital('${c.id}')" class="text-[10px] bg-gray-700 text-white px-2 py-0.5 rounded cursor-pointer">Edit</button>
-                            <button onclick="deleteCapitalEntry('${c.id}')" class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded cursor-pointer">Purge</button>
-                        </td>
-                    </tr>
-                `);
-            });
-
-            wthBody.innerHTML = state.withdraw.length === 0 ? `<tr><td colspan="4" class="p-3 text-center text-xs text-gray-500">No extractions requested.</td></tr>` : '';
-            [...state.withdraw].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(w => {
-                wthBody.insertAdjacentHTML('beforeend', `
-                    <tr class="border-b border-gray-700/20 text-xs text-gray-300">
-                        <td class="p-3 font-mono">${w.date}</td>
-                        <td class="p-3 text-purple-400 font-bold font-mono">-${formatCurrency(w.amount)}</td>
-                        <td class="p-3 text-gray-400 truncate max-w-[120px]">${w.note || '-'}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="editWithdraw('${w.id}')" class="text-[10px] bg-gray-700 text-white px-2 py-0.5 rounded cursor-pointer">Edit</button>
-                            <button onclick="deleteWithdrawEntry('${w.id}')" class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded cursor-pointer">Purge</button>
-                        </td>
-                    </tr>
-                `);
-            });
+            if(wthBody) {
+                const sWth = [...state.withdraw].sort((a,b)=>new Date(b.date)-new Date(a.date));
+                wthBody.innerHTML = sWth.length === 0 ? `<tr><td colspan="4" class="p-3 text-center text-gray-500">No data.</td></tr>` : '';
+                sWth.forEach(w => {
+                    wthBody.insertAdjacentHTML('beforeend', `
+                        <tr class="border-b border-gray-700/20 text-xs text-gray-300">
+                            <td class="p-3 font-mono">${w.date}</td>
+                            <td class="p-3 font-bold text-purple-400">${formatCurrency(w.amount)}</td>
+                            <td class="p-3 text-gray-400 truncate max-w-[120px]">${w.note || '-'}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="editWithdraw('${w.id}')" class="text-[11px] bg-gray-700 px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                                <button onclick="deleteWithdraw('${w.id}')" class="text-[11px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">X</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
         }
 
         function renderPerformanceCalendar() {
             const grid = document.getElementById('calendar-grid'); if(!grid) return;
-            const yr = parseInt(document.getElementById('cal-year-select').value) || new Date().getFullYear();
-            const mo = parseInt(document.getElementById('cal-month-select').value) || 0;
-
             grid.innerHTML = '';
-            const firstDayIndex = new Date(yr, mo, 1).getDay();
-            const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+            
+            const selectedYear = parseInt(document.getElementById('cal-year-select').value) || new Date().getFullYear();
+            const selectedMonth = parseInt(document.getElementById('cal-month-select').value) || 0;
 
-            for(let i=0; i<firstDayIndex; i++) { grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-800/20 rounded-lg min-h-[50px] sm:min-h-[64px]"></div>`); }
+            const firstDayIndex = new Date(selectedYear, selectedMonth, 1).getDay();
+            const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
 
-            for(let d=1; d<=daysInMonth; d++) {
-                const dStr = `${yr}-${(mo+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
-                const daysTrades = state.trading.filter(t => t.date === dStr);
+            for(let i = 0; i < firstDayIndex; i++) {
+                grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-900/20 rounded-lg min-h-[50px] sm:min-h-[70px]"></div>`);
+            }
+
+            for(let day = 1; day <= totalDays; day++) {
+                const dayString = `${selectedYear}-${(selectedMonth+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
+                const dailyTrades = state.trading.filter(t => t.date === dayString);
+                
                 let dayPnL = 0;
-                daysTrades.forEach(t => { dayPnL += (t.outcome==='Profit'?1:-1)*parseFloat(t.amount); });
+                dailyTrades.forEach(t => {
+                    const amt = parseFloat(t.amount);
+                    dayPnL += (t.outcome === 'Profit' ? amt : -amt);
+                });
 
-                let bgClass = "bg-gray-900/60 border border-gray-800";
-                if(daysTrades.length > 0) { bgClass = dayPnL >= 0 ? "bg-emerald-950/40 border border-emerald-800/60 text-emerald-400" : "bg-red-950/40 border border-red-900/60 text-red-400"; }
+                let bgClass = "bg-gray-800 border-gray-700/60";
+                let textClass = "text-gray-400";
+                if(dailyTrades.length > 0) {
+                    bgClass = dayPnL >= 0 ? "bg-emerald-950/60 border-emerald-800/80" : "bg-red-950/60 border-red-900/80";
+                    textClass = dayPnL >= 0 ? "text-emerald-400 font-bold" : "text-red-400 font-bold";
+                }
 
                 grid.insertAdjacentHTML('beforeend', `
-                    <div class="p-1 rounded-lg ${bgClass} min-h-[50px] sm:min-h-[64px] flex flex-col justify-between text-left font-mono">
-                        <span class="text-[10px] font-bold text-gray-500">${d}</span>
-                        ${daysTrades.length > 0 ? `<span class="text-[9px] sm:text-[10px] font-bold truncate tracking-tight text-right">${dayPnL >= 0 ? '+':''}${formatCurrency(dayPnL)}</span>` : ''}
+                    <div class="border p-1 rounded-lg ${bgClass} min-h-[50px] sm:min-h-[70px] flex flex-col justify-between transition hover:scale-[1.02]">
+                        <span class="text-[9px] font-mono text-gray-500 self-start">${day}</span>
+                        ${dailyTrades.length > 0 ? `<span class="text-[9px] sm:text-[10px] font-mono block truncate ${textClass}">${dayPnL >= 0 ? '+':''}${formatCurrency(dayPnL)}</span>` : ''}
+                        <span class="text-[8px] font-mono text-gray-600 tracking-tighter">${dailyTrades.length} Trades</span>
                     </div>
                 `);
             }
+        }
+
+        function renderChartsEngine() {
+            const canvas = document.getElementById('cashflowChart'); if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const monthlyData = {};
+            state.cashflow.forEach(c => {
+                const m = c.date.substring(0, 7);
+                if(!monthlyData[m]) monthlyData[m] = { inc: 0, exp: 0 };
+                if(c.type === 'Income') monthlyData[m].inc += parseFloat(c.amount);
+                else monthlyData[m].exp += parseFloat(c.amount);
+            });
+
+            const sortedMonths = Object.keys(monthlyData).sort().slice(-6);
+            const incomes = sortedMonths.map(m => monthlyData[m].inc);
+            const expenses = sortedMonths.map(m => monthlyData[m].exp);
+
+            if(cashflowChartInstance) cashflowChartInstance.destroy();
+            cashflowChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [
+                        { label: 'Income', data: incomes, backgroundColor: '#10B981', borderRadius: 4 },
+                        { label: 'Expense', data: expenses, backgroundColor: '#EF4444', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9CA3AF', font: { size: 10 } } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#6B7280', font: { size: 9 } } },
+                        y: { grid: { color: '#374151' }, ticks: { color: '#6B7280', font: { size: 9 } } }
+                    }
+                }
+            });
         }
 
         function toggleChatbotWindow() {
             document.getElementById('chatbot-window').classList.toggle('hidden');
         }
 
-        /* FEATURE 1 INTEGRATION: Extended pre-configured question options in Beta */
-        function triggerChatbotAnswer(key) {
-            const chatMessages = document.getElementById('chatbot-messages');
-            let questionText = "";
-            let answerText = "";
+        function triggerChatbotAnswer(id) {
+            const container = document.getElementById('chatbot-messages');
+            const questions = {
+                1: "How do I fix \"Insufficient bank treasury resources\"?",
+                2: "What is the separate file cashflow upload template?",
+                3: "How do KHR currency exchange rate evaluations update math?",
+                4: "How do I sync backup data across other systems?",
+                5: "How do I perform batch purges by Year / Month?",
+                6: "What happens if an uploaded JSON object lacks a category?"
+            };
+            const answers = {
+                1: "Inject balance by creating incoming Cashflow records tagged with an 'Income' type framework parameter.",
+                2: "Drop a JSON file with an array layout structured matching standard properties: <code>[{date, category, type, amount, note}]</code>.",
+                3: "Selecting KHR forces application view layers to cross-multiply standard system elements by a standard 4,000 baseline variable factor rule.",
+                4: "Utilize the <b>Export Everything</b> function to download your current state, then load it elsewhere using the global import option.",
+                5: "Navigate to settings dashboard module page, configure target horizon criteria constraints, and select clear fields execution vector controls.",
+                6: "The processing parser system aborts structural migration loop operations immediately to block architectural layout pollution safely."
+            };
 
-            switch(key) {
-                case 1:
-                    questionText = "How do I fix 'Insufficient bank treasury resources'?";
-                    answerText = "This safety block activates when trying to inject investment funds that exceed your current calculated bank cash flow balance. To balance this loop, navigate to the Cash Flow tab and insert an Income record matching your real-world bank deposit status.";
-                    break;
-                case 2:
-                    questionText = "What is the separate file cashflow upload template?";
-                    answerText = "The localized array bulk loader accepts standard raw valid JSON syntax structured as an array of items, for example: <code>[{\"date\":\"2026-06-18\",\"category\":\"Salary\",\"type\":\"Income\",\"amount\":2500,\"note\":\"Demo example\"}]</code>.";
-                    break;
-                case 3:
-                    questionText = "How do KHR currency exchange rate evaluations update math?";
-                    answerText = "When switching to Cambodian Riel (KHR) global mode inside Settings, the core layout engines apply a hardcoded tracking coefficient multiplier of 4,000 to all stored base USD fields across UI grids automatically.";
-                    break;
-                case 4:
-                    questionText = "How do I sync backup data across other systems?";
-                    answerText = "Click 'Export Everything' in the top-right menu block to save a fully serialized application environment dump file. You can then instantly load this data on any other workstation or device via the companion 'Import Everything' input element.";
-                    break;
-                case 5:
-                    questionText = "How do I perform batch purges by Year / Month?";
-                    answerText = "Head to the Settings tab and locate the Granular Data Purging Console. Pick any date from your desired timeline, then click the corresponding button. For example, 'By Month' will wipe every record matching that month across all tabs.";
-                    break;
-                case 6:
-                    questionText = "What happens if an uploaded JSON object lacks a category?";
-                    answerText = "The cash flow bulk uploader has an enhanced protection guard layer. If any item within the array is missing its 'category' descriptor key string, the import will safely abort immediately to keep your databases from breaking.";
-                    break;
-            }
-
-            chatMessages.insertAdjacentHTML('beforeend', `
-                <div class="flex gap-2 items-start justify-end">
-                    <div class="bg-emerald-600 text-white p-2 rounded-lg text-[10px] max-w-[85%] font-medium">${questionText}</div>
+            container.insertAdjacentHTML('beforeend', `
+                <div class="flex flex-col items-end gap-1">
+                    <div class="bg-emerald-600 text-white p-2 rounded-lg text-[11px] max-w-[85%]">${questions[id]}</div>
                 </div>
                 <div class="flex gap-2 items-start">
                     <div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div>
-                    <div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">${answerText}</div>
+                    <div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">${answers[id]}</div>
                 </div>
             `);
-            setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 50);
-        }
-
-        function renderChartsEngine() {
-            const ctx = document.getElementById('cashflowChart');
-            if(!ctx) return;
-            if (cashflowChartInstance) { cashflowChartInstance.destroy(); }
-
-            const monthlySummary = {};
-            state.cashflow.forEach(c => {
-                const month = c.date.substring(0, 7);
-                if(!monthlySummary[month]) monthlySummary[month] = { inc: 0, exp: 0 };
-                if(c.type === 'Income') monthlySummary[month].inc += parseFloat(c.amount);
-                else monthlySummary[month].exp += parseFloat(c.amount);
-            });
-
-            const sortedLabels = Object.keys(monthlySummary).sort();
-            const incomeDataset = []; const expenseDataset = [];
-            const isKhr = state.settings.currency === 'KHR';
-
-            sortedLabels.forEach(m => {
-                incomeDataset.push(isKhr ? monthlySummary[m].inc * KHR_MULTIPLIER : monthlySummary[m].inc);
-                expenseDataset.push(isKhr ? monthlySummary[m].exp * KHR_MULTIPLIER : monthlySummary[m].exp);
-            });
-
-            cashflowChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sortedLabels,
-                    datasets: [
-                        { label: isKhr ? 'ចំណូល (KHR)' : 'Income ($)', data: incomeDataset, backgroundColor: '#10B981', borderRadius: 4 },
-                        { label: isKhr ? 'ចំណាយ (KHR)' : 'Expense ($)', data: expenseDataset, backgroundColor: '#EF4444', borderRadius: 4 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
-                        y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF', font: { size: 10 } } }
-                    },
-                    plugins: { legend: { labels: { color: '#F3F4F6', font: { size: 11 } } } }
-                }
-            });
+            container.scrollTop = container.scrollHeight;
         }
     </script>
 </body>
