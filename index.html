@@ -318,7 +318,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
                 <div class="lg:col-span-1">
                     <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 lg:sticky lg:top-6">
-                        <h3 id="tj-form-title" class="text-sm sm:text-base font-semibold text-white mb-4" data-i18n="tjLogExecution">Log Execution Trade</h3>
+                        <h3 id="tj-form-title" class="text-sm sm:text-base font-semibold text-white mb-4" data-i18n="tjLogExecution">Log Daily Performance PnL</h3>
                         <form id="trading-form" onsubmit="handleTradingSubmit(event)" class="space-y-3.5">
                             <input type="hidden" id="tj-id">
                             <div>
@@ -343,7 +343,7 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2.5">
                                 <div>
-                                    <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" id="tj-amount-label">Amount ($)</label>
+                                    <label class="block text-[10px] sm:text-xs font-medium text-gray-400 uppercase mb-1" id="tj-amount-label">Realized Net PnL</label>
                                     <input type="number" step="0.01" min="0.01" id="tj-amount" required placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
                                 </div>
                                 <div>
@@ -356,7 +356,7 @@
                                 <textarea id="tj-note" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500"></textarea>
                             </div>
                             <div class="flex gap-2">
-                                <button type="submit" id="tj-btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnSaveTrade">Save Trade</button>
+                                <button type="submit" id="tj-btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg transition-all cursor-pointer" data-i18n="btnSaveTrade">Save Performance</button>
                                 <button type="button" onclick="resetTradingForm()" id="tj-btn-cancel" class="hidden bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs sm:text-sm font-semibold py-2 px-3 rounded-lg transition-all cursor-pointer" data-i18n="btnCancel">Cancel</button>
                             </div>
                         </form>
@@ -364,7 +364,7 @@
                 </div>
 
                 <div class="lg:col-span-3 bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
-                    <h3 class="text-sm sm:text-base font-semibold text-white mb-4" data-i18n="tradeLedgerRecords">Trade Records Ledger</h3>
+                    <h3 class="text-sm sm:text-base font-semibold text-white mb-4" data-i18n="tradeLedgerRecords">Daily Performance Records</h3>
                     <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                         <table class="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[650px] sm:min-w-0">
                             <thead class="bg-gray-700/50 text-gray-400 text-[10px] sm:text-xs uppercase font-mono">
@@ -373,7 +373,7 @@
                                     <th class="p-3" data-i18n="thAsset">Asset</th>
                                     <th class="p-3" data-i18n="thAction">Action</th>
                                     <th class="p-3" data-i18n="thOutcome">Outcome</th>
-                                    <th class="p-3" data-i18n="thGrossRealized">Gross Realized</th>
+                                    <th class="p-3" data-i18n="thGrossRealized">Realized Net PnL</th>
                                     <th class="p-3" data-i18n="thNote">Notes</th>
                                     <th class="p-3 text-right rounded-r-lg" data-i18n="thActions">Actions</th>
                                 </tr>
@@ -404,7 +404,19 @@
                     <div data-i18n="daySun">SUN</div><div data-i18n="dayMon">MON</div><div data-i18n="dayTue">TUE</div>
                     <div data-i18n="dayWed">WED</div><div data-i18n="dayThu">THU</div><div data-i18n="dayFri">FRI</div><div data-i18n="daySat">SAT</div>
                 </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1 sm:gap-2"></div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
+                
+                <!-- Added Total PnL Breakdown Matrix Footer Panel Below Calendar Table Layout -->
+                <div class="mt-6 pt-4 border-t border-gray-700 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Calendar Month Selection Loop</h4>
+                        <p class="text-[11px] text-gray-500 mt-0.5">Aggregated metrics calculation engine of net trading performance matrix profiles.</p>
+                    </div>
+                    <div class="bg-gray-900/80 px-6 py-3.5 rounded-xl border border-gray-700 flex items-center gap-4 min-w-[240px] justify-between">
+                        <span class="text-xs uppercase font-mono font-bold tracking-wider text-gray-400">Total Monthly PnL:</span>
+                        <span id="calendar-total-pnl-node" class="text-base sm:text-lg font-bold font-mono text-white">$0.00</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -711,12 +723,12 @@
                 cardTradeBalTitle: "Trading Account Balance", cardNetWorthTitle: "Total Net Worth", recentCashflow: "Recent Cash Flow",
                 viewAll: "View All", thDate: "Date", thCategory: "Category", thType: "Type", thAmount: "Amount",
                 thNote: "Note", recentTrades: "Recent Trades", thAsset: "Asset", thAction: "Action", thOutcome: "Outcome",
-                thPnL: "PnL", sbTitle: "Trading PnL Sidebar", sbDay: "Day", sbMonth: "Month", sbYear: "Year",
+                thGrossRealized: "Realized Net PnL", thPnL: "PnL", sbTitle: "Trading PnL Sidebar", sbDay: "Day", sbMonth: "Month", sbYear: "Year",
                 sbNetPerf: "Net Performance", sbWinLoss: "Win / Loss", sbWinRate: "Win Rate", sbPeriodTrades: "Trades for This Period",
                 cfChartTitle: "Income vs Expense Tracking", cfFormAdd: "Add Cash Flow", btnSave: "Save Entry",
                 btnCancel: "Cancel", cfRecordsLedger: "Cash Flow Records", allTypes: "All Types", inc: "Income", exp: "Expense",
-                allCategories: "All Categories", thActions: "Actions", tjLogExecution: "Log Execution Trade",
-                btnSaveTrade: "Save Trade", tradeLedgerRecords: "Trade Records Ledger", thGrossRealized: "Gross Realized",
+                allCategories: "All Categories", thActions: "Actions", tjLogExecution: "Log Daily Performance PnL",
+                btnSaveTrade: "Save Performance", tradeLedgerRecords: "Daily Performance Records",
                 injectCapitalTitle: "Funding Capital (Bank → Trade Account)", fundingNotes: "Funding Notes",
                 btnInject: "Inject Capital", extractFundsTitle: "Extract Funds (Trade Account → Bank)", withdrawalNotes: "Withdrawal Notes",
                 btnRequestWithdrawal: "Request Withdrawal", catFormCreate: "Create Category", catTitleLabel: "Category Title Name",
@@ -740,8 +752,8 @@
                 sbNetPerf: "លទ្ធផលសុទ្ធ", sbWinLoss: "ឈ្នះ / ចាញ់", sbWinRate: "អត្រាឈ្នះ", sbPeriodTrades: "ការជួញដូរក្នុងវដ្តនេះ",
                 cfChartTitle: "ការតាមដានចំណូលនិងចំណាយ", cfFormAdd: "បន្ថែមលំហូរសាច់ប្រាក់", btnSave: "រក្សាទុកធាតុ",
                 btnCancel: "បោះបង់", cfRecordsLedger: "កំណត់ត្រាលំហូរសាច់ប្រាក់", allTypes: "គ្រប់ប្រភេទប្រតិបត្តិការ", inc: "ចំណូល", exp: "ចំណាយ",
-                allCategories: "គ្រប់ប្រភេទចំណាត់ថ្នាក់", thActions: "សកម្មភាព", tjLogExecution: "កត់ត្រាការជួញដូរ",
-                btnSaveTrade: "រក្សាទុកការជួញដូរ", tradeLedgerRecords: "សៀវភៅបញ្ជីកំណត់ត្រាជួញដូរ", thGrossRealized: "ចំណេញខាតសរុប",
+                allCategories: "គ្រប់ប្រភេទចំណាត់ថ្នាក់", thActions: "សកម្មភាព", tjLogExecution: "កត់ត្រាការជួញដូរប្រចាំថ្ងៃ",
+                btnSaveTrade: "រក្សាទុកលទ្ធផល", tradeLedgerRecords: "កំណត់ត្រាលទ្ធផលប្រចាំថ្ងៃ", thGrossRealized: "ចំណេញខាតសរុប",
                 injectCapitalTitle: "បញ្ចូលដើមទុនជួញដូរ (ធនាគារ → គណនីជួញដូរ)", fundingNotes: "ចំណាំការបញ្ចូលទុន",
                 btnInject: "បញ្ចូលដើមទុន", extractFundsTitle: "ដកប្រាក់ចំណេញ (គណនីជួញដូរ → ធនាគារ)", withdrawalNotes: "ចំណាំការដកប្រាក់",
                 btnRequestWithdrawal: "ស្នើសុំការដកប្រាក់", catFormCreate: "បង្កើតប្រភេទថ្មី", catTitleLabel: "ឈ្មោះប្រភេទចំណាត់ថ្នាក់",
@@ -750,7 +762,7 @@
                 setLocalization: "ជម្រើសភាសា ចម្បង", setRenameSystem: "ស្លាកម៉ាកសញ្ញាប្រព័ន្ធ",
                 setRenameSysDesc: "ផ្លាស់ប្តូរចំណងជើងបដាកំពូលនៃកម្មវិធី", setProfileIdentity: "ការកែសម្រួលប្រវត្តិរូប",
                 setProfileName: "ឈ្មោះអ្នកប្រតិបត្តិករ", setProfileAvatar: "ទាញយកក្រាហ្វិករូបតំណាង",
-                sortedIncExp: "តម្រៀបចំណូល / ចំណាយ", setCurrency: "រូបិយប័ណ្ណគណនេយ្យសកល",
+                sortedIncExp: "តម្រៀបចំណូល / ចំណាយ", setCurrency: "រូបិយប័ណ្ណគណេយ្យសកល",
                 astFormCreate: "បង្កើតកូដទ្រព្យសកម្ម", astExisting: "បញ្ជីទ្រព្យសកម្មដែលអាចជ្រើសរើសបាន", astClass: "ប្រភេទថ្នាក់ទ្រព្យសកម្ម", btnSaveAst: "រក្សាទុកទ្រព្យសកម្ម",
                 calTitle: "ប្រតិទិនវិភាគលទ្ធផលនៃការជួញដូរ", daySun: "អាទិត្យ", dayMon: "ច័ន្ទ", dayTue: "អង្គារ", dayWed: "ពុធ", dayThu: "ព្រហស្បតិ៍", dayFri: "សុក្រ", daySat: "សៅរ៍"
             }
@@ -881,7 +893,7 @@
             const suffix = state.settings.currency === 'KHR' ? '៛' : '$';
             ['cf-amount-label','tj-amount-label','cap-amount-label','wth-amount-label'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) el.innerText = currentLang === 'kh' ? `ទឹកប្រាក់ (${suffix})` : `Amount (${suffix})`;
+                if(el) el.innerText = currentLang === 'kh' ? `លទ្ធផលចំណេញខាត (${suffix})` : `Realized Net PnL (${suffix})`;
             });
         }
 
@@ -1460,28 +1472,26 @@
             const fType = document.getElementById('filter-cf-type').value; const fCat = document.getElementById('filter-cf-category').value;
 
             let filtered = [...state.cashflow];
-            if(fStart) filtered = filtered.filter(c => c.date >= fStart); if(fEnd) filtered = filtered.filter(c => c.date <= fEnd);
-            if(fType) filtered = filtered.filter(c => c.type === fType); if(fCat) filtered = filtered.filter(c => c.categoryId === fCat);
-            filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+            if(fStart) filtered = filtered.filter(c => c.date >= fStart);
+            if(fEnd) filtered = filtered.filter(c => c.date <= fEnd);
+            if(fType) filtered = filtered.filter(c => c.type === fType);
+            if(fCat) filtered = filtered.filter(c => c.categoryId === fCat);
 
-            body.innerHTML = filtered.length === 0 ? `<tr><td colspan="6" class="p-4 text-center text-gray-500 text-xs">No records.</td></tr>` : '';
+            filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+            body.innerHTML = filtered.length === 0 ? `<tr><td colspan="6" class="p-4 text-center text-gray-500 italic">No cash flow database objects identified matching configuration queries.</td></tr>` : '';
+            
             filtered.forEach(c => {
-                const cat = state.categories.find(item => item.id === c.categoryId) || { name: 'Transfer Node', icon: '🔄' };
-                const isSystem = c.linkedReferenceId ? true : false;
+                const cat = state.categories.find(item => item.id === c.categoryId) || { name: 'Linked Transfer Protocol Link', icon: '🔄' };
                 body.insertAdjacentHTML('beforeend', `
-                    <tr class="border-b border-gray-700/30 text-xs text-gray-300">
-                        <td class="p-3 font-mono">${c.date}</td>
-                        <td class="p-3 flex items-center gap-1.5"><span>${cat.icon}</span><span>${cat.name}</span></td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.type==='Income'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${c.type}</span></td>
-                        <td class="p-3 font-mono font-semibold ${c.type==='Income'?'text-emerald-500':'text-red-500'}">${c.type==='Income'?'+':'-'}${formatCurrency(c.amount)}</td>
-                        <td class="p-3 text-gray-400 truncate max-w-[150px] sm:max-w-[200px]">${c.note || '-'} ${isSystem ? '<span class="text-[9px] bg-blue-950 text-blue-400 px-1 rounded">LINKED</span>':''}</td>
+                    <tr class="border-b border-gray-700/20 text-xs text-gray-300 hover:bg-gray-800/30 transition">
+                        <td class="p-3 font-mono text-gray-400">${c.date}</td>
+                        <td class="p-3 font-medium flex items-center gap-1.5"><span>${cat.icon}</span><span>${cat.name}</span></td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.type==='Income'?'bg-emerald-500/10 text-emerald-500':'bg-red-500/10 text-red-400'}">${c.type}</span></td>
+                        <td class="p-3 font-bold font-mono ${c.type==='Income'?'text-emerald-500':'text-red-500'}">${c.type==='Income'?'+':'-'}${formatCurrency(c.amount)}</td>
+                        <td class="p-3 text-gray-400 max-w-[180px] truncate">${c.note || '-'}</td>
                         <td class="p-3 text-right">
-                            ${isSystem ? '<span class="text-[10px] text-gray-500 italic">Managed via Capital Tab</span>' : `
-                                <div class="flex justify-end gap-1">
-                                    <button onclick="editCashflow('${c.id}')" class="text-xs bg-gray-700 text-white px-2 py-0.5 rounded cursor-pointer">Edit</button>
-                                    <button onclick="deleteCashflow('${c.id}')" class="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded cursor-pointer">Delete</button>
-                                </div>
-                            `}
+                            <button onclick="editCashflow('${c.id}')" class="text-[10px] bg-gray-700 text-white px-2 py-0.5 rounded hover:bg-gray-600 transition cursor-pointer">Edit</button>
+                            <button onclick="deleteCashflow('${c.id}')" class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded hover:bg-red-900/30 transition cursor-pointer">Delete</button>
                         </td>
                     </tr>
                 `);
@@ -1494,15 +1504,15 @@
             const date = document.getElementById('tj-date').value;
             const direction = document.getElementById('tj-direction').value;
             const outcome = document.getElementById('tj-outcome').value;
-            const ticker = document.getElementById('tj-ticker-select').value;
             let amt = parseFloat(document.getElementById('tj-amount').value);
+            const ticker = document.getElementById('tj-ticker-select').value;
             const note = document.getElementById('tj-note').value.trim();
 
             if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
 
-            if(id) {
+            if (id) {
                 const t = state.trading.find(item => item.id === id);
-                if(t) Object.assign(t, { date, direction, outcome, amount: amt, ticker, note });
+                if (t) Object.assign(t, { date, direction, outcome, amount: amt, ticker, note });
             } else {
                 state.trading.push({ id: 'tj-' + Date.now(), date, direction, outcome, amount: amt, ticker, note });
             }
@@ -1525,42 +1535,32 @@
         }
 
         function deleteTrading(id) {
-            if(confirm("Erase trading journal statement structural record row node?")) {
-                state.trading = state.trading.filter(item => item.id !== id); saveStateToLocalStorage();
+            if (confirm("Permanently erase trading portfolio entry node transaction?")) {
+                state.trading = state.trading.filter(t => t.id !== id); saveStateToLocalStorage();
             }
         }
 
         function renderTrading() {
             const body = document.getElementById('trading-table-body'); if(!body) return;
-            const sorted = [...state.trading].sort((a,b) => new Date(b.date) - new Date(a.date));
-            body.innerHTML = sorted.length === 0 ? `<tr><td colspan="7" class="p-4 text-center text-gray-500 text-xs">No records.</td></tr>` : '';
+            let sorted = [...state.trading].sort((a,b) => new Date(b.date) - new Date(a.date));
+            body.innerHTML = sorted.length === 0 ? `<tr><td colspan="7" class="p-4 text-center text-gray-500 italic">No execution data blocks logged inside active memory arrays.</td></tr>` : '';
+            
             sorted.forEach(t => {
                 body.insertAdjacentHTML('beforeend', `
-                    <tr class="border-b border-gray-700/30 text-xs text-gray-300">
-                        <td class="p-3 font-mono">${t.date}</td>
-                        <td class="p-3 font-bold uppercase tracking-wider text-emerald-400">${t.ticker || '-'}</td>
-                        <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${t.direction==='Buy'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${t.direction}</span></td>
-                        <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${t.outcome==='Profit'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${t.outcome}</span></td>
-                        <td class="p-3 font-mono font-bold ${t.outcome==='Profit'?'text-emerald-500':'text-red-500'}">${t.outcome==='Profit'?'+':'-'}${formatCurrency(t.amount)}</td>
-                        <td class="p-3 text-gray-400 truncate max-w-[140px] sm:max-w-[180px]">${t.note || '-'}</td>
+                    <tr class="border-b border-gray-700/20 text-xs text-gray-300 hover:bg-gray-800/30 transition">
+                        <td class="p-3 font-mono text-gray-400">${t.date}</td>
+                        <td class="p-3 font-bold uppercase tracking-wider text-white">${t.ticker || '-'}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold ${t.direction==='Buy'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${t.direction}</span></td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold ${t.outcome==='Profit'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${t.outcome}</span></td>
+                        <td class="p-3 font-bold font-mono ${t.outcome==='Profit'?'text-emerald-500':'text-red-500'}">${t.outcome==='Profit'?'+':'-'}${formatCurrency(t.amount)}</td>
+                        <td class="p-3 text-gray-400 max-w-[150px] truncate">${t.note || '-'}</td>
                         <td class="p-3 text-right">
-                            <div class="flex justify-end gap-1">
-                                <button onclick="editTrading('${t.id}')" class="text-xs bg-gray-700 text-white px-2 py-0.5 rounded cursor-pointer">Edit</button>
-                                <button onclick="deleteTrading('${t.id}')" class="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded cursor-pointer">Delete</button>
-                            </div>
+                            <button onclick="editTrading('${t.id}')" class="text-[10px] bg-gray-700 text-white px-2 py-0.5 rounded hover:bg-gray-600 transition cursor-pointer">Edit</button>
+                            <button onclick="deleteTrading('${t.id}')" class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded hover:bg-red-900/30 transition cursor-pointer">Delete</button>
                         </td>
                     </tr>
                 `);
             });
-        }
-
-        function ensureSystemCategoryExists(name, type) {
-            let cat = state.categories.find(c => c.name === name && c.type === type);
-            if (!cat) {
-                cat = { id: 'cat-sys-' + Date.now() + Math.floor(Math.random()*100), name, type, icon: '🔄', color: '#4B5563' };
-                state.categories.push(cat);
-            }
-            return cat;
         }
 
         function handleCapitalSubmit(e) {
@@ -1568,29 +1568,29 @@
             const id = document.getElementById('cap-id').value;
             const date = document.getElementById('cap-date').value;
             let amt = parseFloat(document.getElementById('cap-amount').value);
-            const note = document.getElementById('cap-note').value.trim();
+            const note = document.getElementById('cap-note').value.trim() || 'Manual Broker Capital Refunding';
 
             if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
-            const cat = ensureSystemCategoryExists('Broker Funding Trans', 'Expense');
+
+            const balances = calculateFinancialBalances();
+            if (!id && (balances.bankAccountBalance - amt < 0)) {
+                if(!confirm("Warning: This injection exceeds bank cash balance parameters. Continue?")) return;
+            }
 
             if(id) {
                 const c = state.capital.find(item => item.id === id);
                 if(c) {
-                    Object.assign(c, { date, amount: amt, note });
-                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === c.id);
-                    if(linked) Object.assign(linked, { date, amount: amt, note: note || 'Capital injected to broker loop' });
+                    const diff = amt - c.amount;
+                    c.date = date; c.amount = amt; c.note = note;
+                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === id);
+                    if(linked) { linked.date = date; linked.amount = amt; linked.note = `[Capital Link Outflow Asset Node] ${note}`; }
                 }
             } else {
-                const newId = 'cap-' + Date.now();
-                state.capital.push({ id: newId, date, amount: amt, note });
+                const capId = 'cap-' + Date.now();
+                state.capital.push({ id: capId, date, amount: amt, note });
                 state.cashflow.push({
-                    id: 'cf-link-' + Date.now(),
-                    date,
-                    categoryId: cat.id,
-                    type: 'Expense',
-                    amount: amt,
-                    note: note || 'Capital injected to broker loop',
-                    linkedReferenceId: newId
+                    id: 'cf-link-' + Date.now(), date, type: 'Expense', amount: amt,
+                    note: `[Capital Link Outflow Asset Node] ${note}`, linkedReferenceId: capId, categoryId: null
                 });
             }
             saveStateToLocalStorage(); resetCapitalForm();
@@ -1602,7 +1602,7 @@
             document.getElementById('cap-id').value = c.id; document.getElementById('cap-date').value = c.date;
             document.getElementById('cap-amount').value = displayAmt.toFixed(2); document.getElementById('cap-note').value = c.note || '';
             document.getElementById('cap-btn-cancel').classList.remove('hidden');
-            document.getElementById('cap-btn-submit').innerText = "Update Capital";
+            document.getElementById('cap-btn-submit').innerText = "Update Injected Entry";
         }
 
         function resetCapitalForm() {
@@ -1612,7 +1612,7 @@
         }
 
         function deleteCapital(id) {
-            if(confirm("Erase funding entry trace across layers?")) {
+            if(confirm("Erase capital deployment row? Linked bank outflow records sync automatic updates.")) {
                 state.capital = state.capital.filter(c => c.id !== id);
                 state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
                 saveStateToLocalStorage();
@@ -1624,29 +1624,28 @@
             const id = document.getElementById('wth-id').value;
             const date = document.getElementById('wth-date').value;
             let amt = parseFloat(document.getElementById('wth-amount').value);
-            const note = document.getElementById('wth-note').value.trim();
+            const note = document.getElementById('wth-note').value.trim() || 'Broker Revenue Withdrawal Extraction';
 
             if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
-            const cat = ensureSystemCategoryExists('Broker Profit Return', 'Income');
+
+            const balances = calculateFinancialBalances();
+            if (!id && (balances.tradingAccountBalance - amt < 0)) {
+                showToast("Operation rejected. Insufficient execution resources inside trading accounts.", "error"); return;
+            }
 
             if(id) {
                 const w = state.withdraw.find(item => item.id === id);
                 if(w) {
-                    Object.assign(w, { date, amount: amt, note });
-                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === w.id);
-                    if(linked) Object.assign(linked, { date, amount: amt, note: note || 'Extracted broker treasury capital back into bank' });
+                    w.date = date; w.amount = amt; w.note = note;
+                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === id);
+                    if(linked) { linked.date = date; linked.amount = amt; linked.note = `[Withdrawal Link Inflow Asset Node] ${note}`; }
                 }
             } else {
-                const newId = 'wth-' + Date.now();
-                state.withdraw.push({ id: newId, date, amount: amt, note });
+                const wthId = 'wth-' + Date.now();
+                state.withdraw.push({ id: wthId, date, amount: amt, note });
                 state.cashflow.push({
-                    id: 'cf-link-' + Date.now(),
-                    date,
-                    categoryId: cat.id,
-                    type: 'Income',
-                    amount: amt,
-                    note: note || 'Extracted broker treasury capital back into bank',
-                    linkedReferenceId: newId
+                    id: 'cf-link-' + Date.now(), date, type: 'Income', amount: amt,
+                    note: `[Withdrawal Link Inflow Asset Node] ${note}`, linkedReferenceId: wthId, categoryId: null
                 });
             }
             saveStateToLocalStorage(); resetWithdrawForm();
@@ -1658,7 +1657,7 @@
             document.getElementById('wth-id').value = w.id; document.getElementById('wth-date').value = w.date;
             document.getElementById('wth-amount').value = displayAmt.toFixed(2); document.getElementById('wth-note').value = w.note || '';
             document.getElementById('wth-btn-cancel').classList.remove('hidden');
-            document.getElementById('wth-btn-submit').innerText = "Update Withdrawal";
+            document.getElementById('wth-btn-submit').innerText = "Update Extract Request";
         }
 
         function resetWithdrawForm() {
@@ -1668,7 +1667,7 @@
         }
 
         function deleteWithdraw(id) {
-            if(confirm("Erase extraction row?")) {
+            if(confirm("Revoke withdrawal? Accompanying transaction records will sync auto-clearing parameters.")) {
                 state.withdraw = state.withdraw.filter(w => w.id !== id);
                 state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
                 saveStateToLocalStorage();
@@ -1678,117 +1677,136 @@
         function renderCapitalAccountModules() {
             const capBody = document.getElementById('capital-table-body');
             const wthBody = document.getElementById('withdraw-table-body');
-            
-            if(capBody) {
-                const sCap = [...state.capital].sort((a,b)=>new Date(b.date)-new Date(a.date));
-                capBody.innerHTML = sCap.length === 0 ? `<tr><td colspan="4" class="p-3 text-center text-gray-500">No data.</td></tr>` : '';
-                sCap.forEach(c => {
-                    capBody.insertAdjacentHTML('beforeend', `
-                        <tr class="border-b border-gray-700/20 text-xs text-gray-300">
-                            <td class="p-3 font-mono">${c.date}</td>
-                            <td class="p-3 font-bold text-blue-400">${formatCurrency(c.amount)}</td>
-                            <td class="p-3 text-gray-400 truncate max-w-[120px]">${c.note || '-'}</td>
-                            <td class="p-3 text-right">
-                                <button onclick="editCapital('${c.id}')" class="text-[11px] bg-gray-700 px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
-                                <button onclick="deleteCapital('${c.id}')" class="text-[11px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">X</button>
-                            </td>
-                        </tr>
-                    `);
-                });
-            }
+            if(!capBody || !wthBody) return;
 
-            if(wthBody) {
-                const sWth = [...state.withdraw].sort((a,b)=>new Date(b.date)-new Date(a.date));
-                wthBody.innerHTML = sWth.length === 0 ? `<tr><td colspan="4" class="p-3 text-center text-gray-500">No data.</td></tr>` : '';
-                sWth.forEach(w => {
-                    wthBody.insertAdjacentHTML('beforeend', `
-                        <tr class="border-b border-gray-700/20 text-xs text-gray-300">
-                            <td class="p-3 font-mono">${w.date}</td>
-                            <td class="p-3 font-bold text-purple-400">${formatCurrency(w.amount)}</td>
-                            <td class="p-3 text-gray-400 truncate max-w-[120px]">${w.note || '-'}</td>
-                            <td class="p-3 text-right">
-                                <button onclick="editWithdraw('${w.id}')" class="text-[11px] bg-gray-700 px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
-                                <button onclick="deleteWithdraw('${w.id}')" class="text-[11px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">X</button>
-                            </td>
-                        </tr>
-                    `);
-                });
-            }
+            capBody.innerHTML = state.capital.length === 0 ? `<tr><td colspan="4" class="p-2 text-center text-gray-500 italic">No allocations.</td></tr>` : '';
+            [...state.capital].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(c => {
+                capBody.insertAdjacentHTML('beforeend', `<tr class="border-b border-gray-700/20 text-xs">
+                    <td class="p-3 font-mono text-gray-400">${c.date}</td>
+                    <td class="p-3 font-bold text-blue-400 font-mono">${formatCurrency(c.amount)}</td>
+                    <td class="p-3 text-gray-400 truncate max-w-[120px]">${c.note}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="editCapital('${c.id}')" class="text-[9px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                        <button onclick="deleteCapital('${c.id}')" class="text-[9px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">Delete</button>
+                    </td>
+                </tr>`);
+            });
+
+            wthBody.innerHTML = state.withdraw.length === 0 ? `<tr><td colspan="4" class="p-2 text-center text-gray-500 italic">No extraction loops.</td></tr>` : '';
+            [...state.withdraw].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(w => {
+                wthBody.insertAdjacentHTML('beforeend', `<tr class="border-b border-gray-700/20 text-xs">
+                    <td class="p-3 font-mono text-gray-400">${w.date}</td>
+                    <td class="p-3 font-bold text-purple-400 font-mono">${formatCurrency(w.amount)}</td>
+                    <td class="p-3 text-gray-400 truncate max-w-[120px]">${w.note}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="editWithdraw('${w.id}')" class="text-[9px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                        <button onclick="deleteWithdraw('${w.id}')" class="text-[9px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">Delete</button>
+                    </td>
+                </tr>`);
+            });
         }
 
         function renderPerformanceCalendar() {
-            const grid = document.getElementById('calendar-grid'); if(!grid) return;
+            const grid = document.getElementById('calendar-grid');
+            const totalPnLNode = document.getElementById('calendar-total-pnl-node');
+            if(!grid || !totalPnLNode) return;
+
+            const selectedYear = parseInt(document.getElementById('cal-year-select').value);
+            const selectedMonth = parseInt(document.getElementById('cal-month-select').value);
+            if(isNaN(selectedYear) || isNaN(selectedMonth)) return;
+
             grid.innerHTML = '';
             
-            const selectedYear = parseInt(document.getElementById('cal-year-select').value) || new Date().getFullYear();
-            const selectedMonth = parseInt(document.getElementById('cal-month-select').value) || 0;
-
             const firstDayIndex = new Date(selectedYear, selectedMonth, 1).getDay();
-            const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            const totalDaysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
 
+            // Structure data mapping dictionary layers
+            let monthlyDayMap = {};
+            let monthlyAggregatedTotalPnL = 0;
+
+            state.trading.forEach(t => {
+                const dObj = new Date(t.date);
+                if(dObj.getFullYear() === selectedYear && dObj.getMonth() === selectedMonth) {
+                    const dayNum = dObj.getDate();
+                    if(!monthlyDayMap[dayNum]) monthlyDayMap[dayNum] = 0;
+                    const amt = parseFloat(t.amount);
+                    monthlyDayMap[dayNum] += (t.outcome === 'Profit' ? amt : -amt);
+                }
+            });
+
+            // Blank spacer day blocks representation mapping alignment
             for(let i = 0; i < firstDayIndex; i++) {
-                grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-900/20 rounded-lg min-h-[50px] sm:min-h-[70px]"></div>`);
+                grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-800/10 border border-transparent rounded-lg p-1"></div>`);
             }
 
-            for(let day = 1; day <= totalDays; day++) {
-                const dayString = `${selectedYear}-${(selectedMonth+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-                const dailyTrades = state.trading.filter(t => t.date === dayString);
+            // Populating absolute real day blocks mapping vectors
+            for(let d = 1; d <= totalDaysInMonth; d++) {
+                const dayPnL = monthlyDayMap[d] || 0;
+                monthlyAggregatedTotalPnL += dayPnL;
                 
-                let dayPnL = 0;
-                dailyTrades.forEach(t => {
-                    const amt = parseFloat(t.amount);
-                    dayPnL += (t.outcome === 'Profit' ? amt : -amt);
-                });
+                let performanceCardBgStyle = "bg-gray-800/60 border-gray-700 text-gray-400 hover:bg-gray-700/50";
+                let pnlStringMarkup = '';
 
-                let bgClass = "bg-gray-800 border-gray-700/60";
-                let textClass = "text-gray-400";
-                if(dailyTrades.length > 0) {
-                    bgClass = dayPnL >= 0 ? "bg-emerald-950/60 border-emerald-800/80" : "bg-red-950/60 border-red-900/80";
-                    textClass = dayPnL >= 0 ? "text-emerald-400 font-bold" : "text-red-400 font-bold";
+                if(dayPnL > 0) {
+                    performanceCardBgStyle = "bg-emerald-950/40 border-emerald-800/60 text-emerald-400 hover:bg-emerald-900/30";
+                    pnlStringMarkup = `<span class="text-[9px] sm:text-[10px] font-bold font-mono tracking-tight text-emerald-400 font-bold block mt-1 truncate">+${formatCurrency(dayPnL)}</span>`;
+                } else if(dayPnL < 0) {
+                    performanceCardBgStyle = "bg-red-950/40 border-red-900/50 text-red-400 hover:bg-red-900/30";
+                    pnlStringMarkup = `<span class="text-[9px] sm:text-[10px] font-bold font-mono tracking-tight text-red-400 font-bold block mt-1 truncate">${formatCurrency(dayPnL)}</span>`;
                 }
 
                 grid.insertAdjacentHTML('beforeend', `
-                    <div class="border p-1 rounded-lg ${bgClass} min-h-[50px] sm:min-h-[70px] flex flex-col justify-between transition hover:scale-[1.02]">
-                        <span class="text-[9px] font-mono text-gray-500 self-start">${day}</span>
-                        ${dailyTrades.length > 0 ? `<span class="text-[9px] sm:text-[10px] font-mono block truncate ${textClass}">${dayPnL >= 0 ? '+':''}${formatCurrency(dayPnL)}</span>` : ''}
-                        <span class="text-[8px] font-mono text-gray-600 tracking-tighter">${dailyTrades.length} Trades</span>
+                    <div class="border rounded-xl p-2 text-left flex flex-col justify-between transition min-h-[100px] sm:min-h-[120px] ${performanceCardBgStyle}">
+                        <span class="text-[10px] sm:text-xs font-mono font-semibold text-gray-500">${d}</span>
+                        <div class="mt-auto">${pnlStringMarkup}</div>
                     </div>
                 `);
+            }
+
+            // Render updated net calculations to global metric node objects
+            totalPnLNode.innerText = formatCurrency(monthlyAggregatedTotalPnL);
+            if (monthlyAggregatedTotalPnL >= 0) {
+                totalPnLNode.className = "text-base sm:text-lg font-bold font-mono text-emerald-400";
+            } else {
+                totalPnLNode.className = "text-base sm:text-lg font-bold font-mono text-red-400";
             }
         }
 
         function renderChartsEngine() {
             const canvas = document.getElementById('cashflowChart'); if(!canvas) return;
             const ctx = canvas.getContext('2d');
-            
-            const monthlyData = {};
+            if (cashflowChartInstance) cashflowChartInstance.destroy();
+
+            let groupings = {};
             state.cashflow.forEach(c => {
-                const m = c.date.substring(0, 7);
-                if(!monthlyData[m]) monthlyData[m] = { inc: 0, exp: 0 };
-                if(c.type === 'Income') monthlyData[m].inc += parseFloat(c.amount);
-                else monthlyData[m].exp += parseFloat(c.amount);
+                const m = c.date.substring(0, 7); if(!groupings[m]) groupings[m] = { inc: 0, exp: 0 };
+                if (c.type === 'Income') groupings[m].inc += c.amount; else groupings[m].exp += c.amount;
             });
 
-            const sortedMonths = Object.keys(monthlyData).sort().slice(-6);
-            const incomes = sortedMonths.map(m => monthlyData[m].inc);
-            const expenses = sortedMonths.map(m => monthlyData[m].exp);
+            const sortedKeys = Object.keys(groupings).sort().slice(-6);
+            const isKhr = state.settings.currency === 'KHR';
 
-            if(cashflowChartInstance) cashflowChartInstance.destroy();
+            const datasets = {
+                labels: sortedKeys,
+                income: sortedKeys.map(k => isKhr ? groupings[k].inc * KHR_MULTIPLIER : groupings[k].inc),
+                expense: sortedKeys.map(k => isKhr ? groupings[k].exp * KHR_MULTIPLIER : groupings[k].exp)
+            };
+
             cashflowChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: sortedMonths,
+                    labels: datasets.labels,
                     datasets: [
-                        { label: 'Income', data: incomes, backgroundColor: '#10B981', borderRadius: 4 },
-                        { label: 'Expense', data: expenses, backgroundColor: '#EF4444', borderRadius: 4 }
+                        { label: 'Income', data: datasets.income, backgroundColor: '#10B981', borderRadius: 4 },
+                        { label: 'Expense', data: datasets.expense, backgroundColor: '#EF4444', borderRadius: 4 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#9CA3AF', font: { size: 10 } } } },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#6B7280', font: { size: 9 } } },
-                        y: { grid: { color: '#374151' }, ticks: { color: '#6B7280', font: { size: 9 } } }
+                        x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
+                        y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF', font: { size: 10 } } }
                     }
                 }
             });
@@ -1800,33 +1818,21 @@
 
         function triggerChatbotAnswer(id) {
             const container = document.getElementById('chatbot-messages');
-            const questions = {
-                1: "How do I fix \"Insufficient bank treasury resources\"?",
-                2: "What is the separate file cashflow upload template?",
-                3: "How do KHR currency exchange rate evaluations update math?",
-                4: "How do I sync backup data across other systems?",
-                5: "How do I perform batch purges by Year / Month?",
-                6: "What happens if an uploaded JSON object lacks a category?"
-            };
-            const answers = {
-                1: "Inject balance by creating incoming Cashflow records tagged with an 'Income' type framework parameter.",
-                2: "Drop a JSON file with an array layout structured matching standard properties: <code>[{date, category, type, amount, note}]</code>.",
-                3: "Selecting KHR forces application view layers to cross-multiply standard system elements by a standard 4,000 baseline variable factor rule.",
-                4: "Utilize the <b>Export Everything</b> function to download your current state, then load it elsewhere using the global import option.",
-                5: "Navigate to settings dashboard module page, configure target horizon criteria constraints, and select clear fields execution vector controls.",
-                6: "The processing parser system aborts structural migration loop operations immediately to block architectural layout pollution safely."
-            };
+            let q = "", a = "";
+            switch (id) {
+                case 1: q = "How do I fix \"Insufficient bank treasury resources\"?"; a = "Isolate cash flow deficits by using the Cash Flow module tab to append high-yield income entries, or bypass alerts by clearing configuration checkboxes inside terminal configurations."; break;
+                case 2: q = "What is the separate file cashflow upload template?"; a = "Bulk loader engines consume precise structural JSON matching standard records mapping arrays containing matching <code>[{ \"date\": \"YYYY-MM-DD\", \"category\": \"Salary\", \"type\": \"Income\", \"amount\": 250, \"note\": \"...\" }]</code> parameters."; break;
+                case 3: q = "How do KHR currency exchange rate evaluations update math?"; a = "The core system executes cross-ledger calculation mappings tracking fixed standard base evaluations multiplied by the KHR index factor ($1.00 USD mapped straight to 4,000 ៛ KHR parameters)."; break;
+                case 4: q = "How do I sync backup data across other systems?"; a = "Execute bulk 'Export Everything' routines inside the primary navbar, capture generated master JSON backup streams, and perform drop file imports directly into the destination system environments."; break;
+                case 5: q = "How do I perform batch purges by Year / Month?"; a = "Navigate inside settings control panes, enter a desired reference day vector anchor into target inputs, and choose the scope parameter (Purge by Day/Month/Year). This resets matched transactional nodes to 0."; break;
+                case 6: q = "What happens if an uploaded JSON object lacks a category?"; a = "The engine rejects undefined file rows to protect structural calculation paths. Every input record strictly requires a matching character category string descriptor parameter."; break;
+            }
 
-            container.insertAdjacentHTML('beforeend', `
-                <div class="flex flex-col items-end gap-1">
-                    <div class="bg-emerald-600 text-white p-2 rounded-lg text-[11px] max-w-[85%]">${questions[id]}</div>
-                </div>
-                <div class="flex gap-2 items-start">
-                    <div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div>
-                    <div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">${answers[id]}</div>
-                </div>
-            `);
-            container.scrollTop = container.scrollHeight;
+            container.insertAdjacentHTML('beforeend', `<div class="flex gap-2 items-start justify-end"><div class="bg-emerald-600 text-white p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">${q}</div></div>`);
+            setTimeout(() => {
+                container.insertAdjacentHTML('beforeend', `<div class="flex gap-2 items-start"><div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div><div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">${a}</div></div>`);
+                container.scrollTop = container.scrollHeight;
+            }, 300);
         }
     </script>
 </body>
