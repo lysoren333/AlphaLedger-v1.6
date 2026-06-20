@@ -183,23 +183,26 @@
         </section>
 
         <section id="tab-cashflow" class="hidden space-y-4 sm:space-y-6">
-            <!-- New Enhanced Dynamic Spending Horizon Module -->
             <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                         <h3 class="text-sm sm:text-base lg:text-lg font-bold text-white flex items-center gap-2">
                             <span>🛍️</span> <span>Spending Horizon Controller</span>
                         </h3>
-                        <p class="text-[11px] text-gray-400">View real-time spending metrics and summaries across timeframes.</p>
+                        <p class="text-[11px] text-gray-400">View dynamic spending breakdown and parameters metrics matching selected target dates.</p>
                     </div>
-                    <div class="grid grid-cols-3 gap-1 bg-gray-900 p-1 rounded-lg w-full sm:w-auto">
-                        <button onclick="setSpendingPeriod('day')" id="sp-period-day" class="px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer bg-gray-700 text-white">Day</button>
-                        <button onclick="setSpendingPeriod('month')" id="sp-period-month" class="px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer text-gray-400">Month</button>
-                        <button onclick="setSpendingPeriod('year')" id="sp-period-year" class="px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer text-gray-400">Year</button>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <div class="flex items-center gap-1">
+                            <span class="text-[10px] uppercase font-mono text-gray-400">From:</span>
+                            <input type="date" id="sp-filter-start" onchange="renderSpendingHorizonEngine()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1 text-xs text-white">
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-[10px] uppercase font-mono text-gray-400">To:</span>
+                            <input type="date" id="sp-filter-end" onchange="renderSpendingHorizonEngine()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1 text-xs text-white">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Spending Horizon Summaries -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                     <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700/50">
                         <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Total Spending (Selected Horizon)</p>
@@ -215,7 +218,6 @@
                     </div>
                 </div>
 
-                <!-- Detail Horizon Breakdown Table Grid -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-gray-300">
                         <thead class="bg-gray-700/40 text-gray-400 text-[10px] uppercase font-mono">
@@ -394,7 +396,7 @@
                         <select id="cal-month-select" onchange="renderPerformanceCalendar()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500">
                             <option value="0">January</option><option value="1">February</option><option value="2">March</option>
                             <option value="3">April</option><option value="4">May</option><option value="5">June</option>
-                            <option value="6">July</option><option value="7">August</option><option value="8 September">September</option>
+                            <option value="6">July</option><option value="7">August</option><option value="8">September</option>
                             <option value="9">October</option><option value="10">November</option><option value="11">December</option>
                         </select>
                     </div>
@@ -406,7 +408,6 @@
                 </div>
                 <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
                 
-                <!-- Added Total PnL Breakdown Matrix Footer Panel Below Calendar Table Layout -->
                 <div class="mt-6 pt-4 border-t border-gray-700 flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Calendar Month Selection Loop</h4>
@@ -663,7 +664,7 @@
             💬 Ask Beta
         </button>
 
-        <div id="chatbot-window" class="hidden w-[310px] sm:w-[360px] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200">
+        <div id="chatbot-window" class="hidden w-[310px] sm:w-[380px] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200">
             <div class="bg-gray-700 p-3 flex justify-between items-center border-b border-gray-600">
                 <div class="flex items-center gap-2">
                     <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[10px]">🤖</div>
@@ -672,22 +673,38 @@
                 <button onclick="toggleChatbotWindow()" class="text-gray-400 hover:text-white text-xs font-bold cursor-pointer">✕</button>
             </div>
 
-            <div id="chatbot-messages" class="p-3 space-y-2.5 h-[200px] overflow-y-auto bg-gray-900/60 scrollbar">
+            <div id="chatbot-messages" class="p-3 space-y-2.5 h-[220px] overflow-y-auto bg-gray-900/60 scrollbar">
                 <div class="flex gap-2 items-start">
                     <div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div>
                     <div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">
-                        Hello! I am <span class="font-bold text-emerald-400">Beta</span>. Select an operational question below to learn how to manage your ledgers:
+                        Hello! I am <span class="font-bold text-emerald-400">Beta</span>. Click on any financial metrics inquiry below to check live totals across your active ledgers:
                     </div>
                 </div>
             </div>
 
-            <div class="p-2.5 bg-gray-750 border-t border-gray-700 space-y-1 max-h-[170px] overflow-y-auto">
-                <button onclick="triggerChatbotAnswer(1)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1.5 text-[10px] sm:text-[11px] text-gray-300 transition block truncate cursor-pointer">❓ How do I fix "Insufficient bank treasury resources"?</button>
-                <button onclick="triggerChatbotAnswer(2)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1.5 text-[10px] sm:text-[11px] text-gray-300 transition block truncate cursor-pointer">❓ What is the separate file cashflow upload template?</button>
-                <button onclick="triggerChatbotAnswer(3)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1.5 text-[10px] sm:text-[11px] text-gray-300 transition block truncate cursor-pointer">❓ How do KHR currency exchange rate evaluations update math?</button>
-                <button onclick="triggerChatbotAnswer(4)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1.5 text-[10px] sm:text-[11px] text-gray-300 transition block truncate cursor-pointer">❓ How do I sync backup data across other systems?</button>
-                <button onclick="triggerChatbotAnswer(5)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1.5 text-[10px] sm:text-[11px] text-gray-300 transition block truncate cursor-pointer">❓ How do I perform batch purges by Year / Month?</button>
-                <button onclick="triggerChatbotAnswer(6)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1.5 text-[10px] sm:text-[11px] text-gray-300 transition block truncate cursor-pointer">❓ What happens if an uploaded JSON object lacks a category?</button>
+            <!-- Enhanced smart buttons option parameters list layout panel -->
+            <div class="p-2.5 bg-gray-750 border-t border-gray-700 grid grid-cols-1 gap-1 max-h-[220px] overflow-y-auto">
+                <div class="text-[9px] text-gray-500 font-mono uppercase tracking-wider px-1 mb-0.5">💰 Live Accounting Inquiries</div>
+                <div class="grid grid-cols-3 gap-1">
+                    <button onclick="askBetaFinancials('expenses-today')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">💸 Spent Today</button>
+                    <button onclick="askBetaFinancials('expenses-month')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📅 Spent Month</button>
+                    <button onclick="askBetaFinancials('expenses-year')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">🏦 Spent Year</button>
+                </div>
+                <div class="grid grid-cols-3 gap-1">
+                    <button onclick="askBetaFinancials('pnl-today')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📈 PnL Today</button>
+                    <button onclick="askBetaFinancials('pnl-month')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📊 PnL Month</button>
+                    <button onclick="askBetaFinancials('pnl-year')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">💎 PnL Year</button>
+                </div>
+                <div class="grid grid-cols-3 gap-1">
+                    <button onclick="askBetaFinancials('net-worth')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">👑 Total Net Worth</button>
+                    <button onclick="askBetaFinancials('trading-vol')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">⚡ Total Volume</button>
+                    <button onclick="askBetaFinancials('bank-bal')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">🏦 Bank Balance</button>
+                </div>
+
+                <div class="text-[9px] text-gray-500 font-mono uppercase tracking-wider px-1 mt-1.5 mb-0.5">❓ System Operations Help</div>
+                <button onclick="triggerChatbotAnswer(1)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ Insufficient bank treasury resources error?</button>
+                <button onclick="triggerChatbotAnswer(2)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ Cashflow isolation upload template structure?</button>
+                <button onclick="triggerChatbotAnswer(3)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ How do KHR exchange conversions compute?</button>
             </div>
         </div>
     </div>
@@ -711,7 +728,6 @@
 
         const KHR_MULTIPLIER = 4000;
         let sidebarFilterPeriod = 'day'; 
-        let spendingFilterPeriod = 'day'; // New Variable to track selected time scale
         let cashflowChartInstance = null;
         let categorySortConfig = { field: null, direction: 'asc' };
 
@@ -787,6 +803,18 @@
 
         function dismissInstructions() {
             document.getElementById('system-instruction-banner').style.display = 'none';
+        }
+
+        function getBangkokTodayDateString() {
+            const now = new Date();
+            const bangkokTimeStr = now.toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
+            const parsedBangkokDate = new Date(bangkokTimeStr);
+            
+            const year = parsedBangkokDate.getFullYear();
+            const month = String(parsedBangkokDate.getMonth() + 1).padStart(2, '0');
+            const day = String(parsedBangkokDate.getDate()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}`;
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -868,16 +896,17 @@
                 opt.value = y; opt.innerText = y;
                 select.appendChild(opt);
             }
-            const now = new Date();
-            select.value = now.getFullYear();
-            document.getElementById('cal-month-select').value = now.getMonth();
+            const bkkToday = getBangkokTodayDateString();
+            const dateParts = bkkToday.split('-');
+            select.value = parseInt(dateParts[0]);
+            document.getElementById('cal-month-select').value = parseInt(dateParts[1]) - 1;
         }
 
         function setTodayDatesOnForms() {
-            const today = new Date().toISOString().split('T')[0];
-            ['cf-date', 'tj-date', 'cap-date', 'wth-date', 'purge-target-date'].forEach(id => {
+            const bkkToday = getBangkokTodayDateString();
+            ['cf-date', 'tj-date', 'cap-date', 'wth-date', 'purge-target-date', 'sp-filter-start', 'sp-filter-end'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.value = today;
+                if (el) el.value = bkkToday;
             });
         }
 
@@ -1152,16 +1181,6 @@
             document.getElementById('card-net-worth').innerText = formatCurrency(balances.totalNetWorth);
             applyLanguageSettingsDictionary(); renderAvatarComponentElements(); populateSortedDropdownSelectors();
             renderDashboardTables(); renderCashflow(); renderTrading(); renderCapitalAccountModules(); renderCategories(); renderAssetsTable(); renderSidebarPnLMetrics(); renderPerformanceCalendar();
-            renderSpendingHorizonEngine(); // Execute new spending layout loop
-        }
-
-        // New Logic Block to calculate and present Spending Summaries & Detailed Data Rows
-        function setSpendingPeriod(period) {
-            spendingFilterPeriod = period;
-            ['day','month','year'].forEach(p => {
-                document.getElementById('sp-period-' + p).className = "px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer text-gray-400";
-            });
-            document.getElementById('sp-period-' + period).className = "px-4 py-1 text-xs font-medium rounded-md transition cursor-pointer bg-gray-700 text-white";
             renderSpendingHorizonEngine();
         }
 
@@ -1172,23 +1191,20 @@
             const tableBody = document.getElementById('spending-horizon-details-table');
             if(!tableBody) return;
 
-            const today = new Date();
-            const yearString = today.getFullYear().toString();
-            const monthString = today.toISOString().substring(0, 7);
-            const dayString = today.toISOString().substring(0, 10);
+            const startVal = document.getElementById('sp-filter-start').value;
+            const endVal = document.getElementById('sp-filter-end').value;
 
-            // Filter entries to match chosen horizon window string segment and type explicitly set to Expense
             const spendingEntries = state.cashflow.filter(item => {
                 if(item.type !== 'Expense') return false;
-                if(spendingFilterPeriod === 'day') return item.date === dayString;
-                if(spendingFilterPeriod === 'month') return item.date.substring(0, 7) === monthString;
-                return item.date.substring(0, 4) === yearString;
+                if(startVal && item.date < startVal) return false;
+                if(endVal && item.date > endVal) return false;
+                return true;
             });
 
             let totalSpent = 0;
             let categoryGroupingMap = {};
 
-            tableBody.innerHTML = spendingEntries.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-gray-500 italic">No spending records identified within this specific window.</td></tr>` : '';
+            tableBody.innerHTML = spendingEntries.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-gray-500 italic">No spending records identified within this specific range.</td></tr>` : '';
             
             spendingEntries.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
                 const cat = state.categories.find(c => c.id === item.categoryId) || { name: 'Unassigned', icon: '🛒' };
@@ -1210,7 +1226,6 @@
                 `);
             });
 
-            // Identify maximum category spending cluster
             let topCatName = "None";
             let topCatVal = 0;
             for(let name in categoryGroupingMap) {
@@ -1273,10 +1288,10 @@
             const listContainer = document.getElementById('sb-trades-list');
             if(!totalContainer || !listContainer) return;
 
-            const today = new Date();
-            const yearStr = today.getFullYear().toString();
-            const monthStr = today.toISOString().substring(0, 7); 
-            const dayStr = today.toISOString().substring(0, 10);
+            const bkkToday = getBangkokTodayDateString();
+            const yearStr = bkkToday.substring(0, 4);
+            const monthStr = bkkToday.substring(0, 7); 
+            const dayStr = bkkToday;
 
             const filteredTrades = state.trading.filter(t => {
                 if(sidebarFilterPeriod === 'day') return t.date === dayStr;
@@ -1447,55 +1462,66 @@
         }
 
         function editCashflow(id) {
-            const cf = state.cashflow.find(c => c.id === id); if(!cf) return;
+            const cf = state.cashflow.find(c => c.id === id);
+            if(!cf) return;
+            document.getElementById('cf-id').value = cf.id;
+            document.getElementById('cf-date').value = cf.date;
+            document.getElementById('cf-category').value = cf.categoryId;
             const displayAmt = state.settings.currency === 'KHR' ? cf.amount * KHR_MULTIPLIER : cf.amount;
-            document.getElementById('cf-id').value = cf.id; document.getElementById('cf-date').value = cf.date;
-            document.getElementById('cf-category').value = cf.categoryId; document.getElementById('cf-amount').value = displayAmt.toFixed(2);
+            document.getElementById('cf-amount').value = displayAmt.toFixed(2);
             document.getElementById('cf-note').value = cf.note || '';
             document.getElementById('cf-btn-cancel').classList.remove('hidden');
+            document.getElementById('cf-form-title').innerText = "Edit Cash Flow Entry";
         }
 
         function resetCashflowForm() {
-            document.getElementById('cashflow-form').reset(); document.getElementById('cf-id').value = '';
-            setTodayDatesOnForms(); document.getElementById('cf-btn-cancel').classList.add('hidden');
+            document.getElementById('cashflow-form').reset();
+            document.getElementById('cf-id').value = '';
+            document.getElementById('cf-btn-cancel').classList.add('hidden');
+            document.getElementById('cf-form-title').innerText = "Add Cash Flow";
+            setTodayDatesOnForms();
         }
 
         function deleteCashflow(id) {
-            if (confirm("Delete ledger log database entry row?")) {
-                state.cashflow = state.cashflow.filter(c => c.id !== id); saveStateToLocalStorage();
+            if(confirm("Permanently erase cashflow transactional item link row?")) {
+                state.cashflow = state.cashflow.filter(c => c.id !== id);
+                saveStateToLocalStorage();
             }
         }
 
         function renderCashflow() {
             const body = document.getElementById('cashflow-table-body'); if(!body) return;
-            const fStart = document.getElementById('filter-cf-start').value; const fEnd = document.getElementById('filter-cf-end').value;
-            const fType = document.getElementById('filter-cf-type').value; const fCat = document.getElementById('filter-cf-category').value;
+            const fStart = document.getElementById('filter-cf-start').value;
+            const fEnd = document.getElementById('filter-cf-end').value;
+            const fType = document.getElementById('filter-cf-type').value;
+            const fCat = document.getElementById('filter-cf-category').value;
 
-            let filtered = [...state.cashflow];
-            if(fStart) filtered = filtered.filter(c => c.date >= fStart);
-            if(fEnd) filtered = filtered.filter(c => c.date <= fEnd);
-            if(fType) filtered = filtered.filter(c => c.type === fType);
-            if(fCat) filtered = filtered.filter(c => c.categoryId === fCat);
+            const items = state.cashflow.filter(c => {
+                if(fStart && c.date < fStart) return false;
+                if(fEnd && c.date > fEnd) return false;
+                if(fType && c.type !== fType) return false;
+                if(fCat && c.categoryId !== fCat) return false;
+                return true;
+            }).sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
-            body.innerHTML = filtered.length === 0 ? `<tr><td colspan="6" class="p-4 text-center text-gray-500 italic">No cash flow database objects identified matching configuration queries.</td></tr>` : '';
-            
-            filtered.forEach(c => {
-                const cat = state.categories.find(item => item.id === c.categoryId) || { name: 'Linked Transfer Protocol Link', icon: '🔄' };
+            body.innerHTML = items.length === 0 ? `<tr><td colspan="6" class="p-4 text-center text-gray-500 italic">No historical cash flows mapped matching options.</td></tr>` : '';
+            items.forEach(c => {
+                const cat = state.categories.find(item => item.id === c.categoryId) || { name: 'Transfer Link', icon: '🔄' };
                 body.insertAdjacentHTML('beforeend', `
-                    <tr class="border-b border-gray-700/20 text-xs text-gray-300 hover:bg-gray-800/30 transition">
+                    <tr class="border-b border-gray-700/20 text-xs text-gray-300 hover:bg-gray-800/20 transition">
                         <td class="p-3 font-mono text-gray-400">${c.date}</td>
                         <td class="p-3 font-medium flex items-center gap-1.5"><span>${cat.icon}</span><span>${cat.name}</span></td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.type==='Income'?'bg-emerald-500/10 text-emerald-500':'bg-red-500/10 text-red-400'}">${c.type}</span></td>
-                        <td class="p-3 font-bold font-mono ${c.type==='Income'?'text-emerald-500':'text-red-500'}">${c.type==='Income'?'+':'-'}${formatCurrency(c.amount)}</td>
-                        <td class="p-3 text-gray-400 max-w-[180px] truncate">${c.note || '-'}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="editCashflow('${c.id}')" class="text-[10px] bg-gray-700 text-white px-2 py-0.5 rounded hover:bg-gray-600 transition cursor-pointer">Edit</button>
-                            <button onclick="deleteCashflow('${c.id}')" class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded hover:bg-red-900/30 transition cursor-pointer">Delete</button>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.type === 'Income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-400'}">${c.type}</span></td>
+                        <td class="p-3 font-bold ${c.type === 'Income' ? 'text-emerald-500' : 'text-red-400'}">${c.type === 'Income' ? '+' : '-'}${formatCurrency(c.amount)}</td>
+                        <td class="p-3 text-gray-400 max-w-[200px] truncate">${c.note || '-'}</td>
+                        <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                            <button onclick="editCashflow('${c.id}')" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px] cursor-pointer">Edit</button>
+                            <button onclick="deleteCashflow('${c.id}')" class="bg-red-950 text-red-400 hover:bg-red-900 px-2 py-1 rounded text-[10px] cursor-pointer">Delete</button>
                         </td>
                     </tr>
                 `);
             });
+            renderChartsEngine();
         }
 
         function handleTradingSubmit(e) {
@@ -1504,115 +1530,125 @@
             const date = document.getElementById('tj-date').value;
             const direction = document.getElementById('tj-direction').value;
             const outcome = document.getElementById('tj-outcome').value;
-            let amt = parseFloat(document.getElementById('tj-amount').value);
+            let amount = parseFloat(document.getElementById('tj-amount').value);
             const ticker = document.getElementById('tj-ticker-select').value;
             const note = document.getElementById('tj-note').value.trim();
 
-            if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
+            if(state.settings.currency === 'KHR') amount = amount / KHR_MULTIPLIER;
 
             if (id) {
-                const t = state.trading.find(item => item.id === id);
-                if (t) Object.assign(t, { date, direction, outcome, amount: amt, ticker, note });
+                const trade = state.trading.find(t => t.id === id);
+                if (trade) Object.assign(trade, { date, direction, outcome, amount, ticker, note });
             } else {
-                state.trading.push({ id: 'tj-' + Date.now(), date, direction, outcome, amount: amt, ticker, note });
+                state.trading.push({ id: 'tj-' + Date.now(), date, direction, outcome, amount, ticker, note });
             }
             saveStateToLocalStorage(); resetTradingForm();
         }
 
         function editTrading(id) {
-            const t = state.trading.find(item => item.id === id); if(!t) return;
-            const displayAmt = state.settings.currency === 'KHR' ? t.amount * KHR_MULTIPLIER : t.amount;
+            const t = state.trading.find(trade => trade.id === id); if(!t) return;
             document.getElementById('tj-id').value = t.id; document.getElementById('tj-date').value = t.date;
             document.getElementById('tj-direction').value = t.direction; document.getElementById('tj-outcome').value = t.outcome;
-            document.getElementById('tj-amount').value = displayAmt.toFixed(2); document.getElementById('tj-ticker-select').value = t.ticker;
-            document.getElementById('tj-note').value = t.note || '';
+            const displayAmt = state.settings.currency === 'KHR' ? t.amount * KHR_MULTIPLIER : t.amount;
+            document.getElementById('tj-amount').value = displayAmt.toFixed(2);
+            document.getElementById('tj-ticker-select').value = t.ticker; document.getElementById('tj-note').value = t.note || '';
             document.getElementById('tj-btn-cancel').classList.remove('hidden');
+            document.getElementById('tj-form-title').innerText = "Modify Logged Performance Row";
         }
 
         function resetTradingForm() {
             document.getElementById('trading-form').reset(); document.getElementById('tj-id').value = '';
-            setTodayDatesOnForms(); document.getElementById('tj-btn-cancel').classList.add('hidden');
+            document.getElementById('tj-btn-cancel').classList.add('hidden');
+            document.getElementById('tj-form-title').innerText = "Log Daily Performance PnL";
+            setTodayDatesOnForms();
         }
 
         function deleteTrading(id) {
-            if (confirm("Permanently erase trading portfolio entry node transaction?")) {
+            if(confirm("Delete trade performance line?")) {
                 state.trading = state.trading.filter(t => t.id !== id); saveStateToLocalStorage();
             }
         }
 
         function renderTrading() {
             const body = document.getElementById('trading-table-body'); if(!body) return;
-            let sorted = [...state.trading].sort((a,b) => new Date(b.date) - new Date(a.date));
-            body.innerHTML = sorted.length === 0 ? `<tr><td colspan="7" class="p-4 text-center text-gray-500 italic">No execution data blocks logged inside active memory arrays.</td></tr>` : '';
-            
+            const sorted = [...state.trading].sort((a,b) => new Date(b.date) - new Date(a.date));
+            body.innerHTML = sorted.length === 0 ? `<tr><td colspan="7" class="p-4 text-center text-gray-500 italic">No execution logs parsed yet.</td></tr>` : '';
             sorted.forEach(t => {
                 body.insertAdjacentHTML('beforeend', `
-                    <tr class="border-b border-gray-700/20 text-xs text-gray-300 hover:bg-gray-800/30 transition">
+                    <tr class="border-b border-gray-700/20 text-xs text-gray-300 hover:bg-gray-800/20 transition">
                         <td class="p-3 font-mono text-gray-400">${t.date}</td>
-                        <td class="p-3 font-bold uppercase tracking-wider text-white">${t.ticker || '-'}</td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold ${t.direction==='Buy'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${t.direction}</span></td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold ${t.outcome==='Profit'?'bg-emerald-500/10 text-emerald-400':'bg-red-500/10 text-red-400'}">${t.outcome}</span></td>
-                        <td class="p-3 font-bold font-mono ${t.outcome==='Profit'?'text-emerald-500':'text-red-500'}">${t.outcome==='Profit'?'+':'-'}${formatCurrency(t.amount)}</td>
-                        <td class="p-3 text-gray-400 max-w-[150px] truncate">${t.note || '-'}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="editTrading('${t.id}')" class="text-[10px] bg-gray-700 text-white px-2 py-0.5 rounded hover:bg-gray-600 transition cursor-pointer">Edit</button>
-                            <button onclick="deleteTrading('${t.id}')" class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded hover:bg-red-900/30 transition cursor-pointer">Delete</button>
+                        <td class="p-3 font-bold text-white tracking-wide uppercase">${t.ticker}</td>
+                        <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${t.direction === 'Buy' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'}">${t.direction}</span></td>
+                        <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${t.outcome === 'Profit' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">${t.outcome}</span></td>
+                        <td class="p-3 font-mono font-bold ${t.outcome === 'Profit' ? 'text-emerald-500' : 'text-red-400'}">${t.outcome === 'Profit' ? '+' : '-'}${formatCurrency(t.amount)}</td>
+                        <td class="p-3 text-gray-400 truncate max-w-[160px]">${t.note || '-'}</td>
+                        <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                            <button onclick="editTrading('${t.id}')" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px] cursor-pointer">Edit</button>
+                            <button onclick="deleteTrading('${t.id}')" class="bg-red-950 text-red-400 hover:bg-red-900 px-2 py-1 rounded text-[10px] cursor-pointer">Delete</button>
                         </td>
                     </tr>
                 `);
             });
+            renderSidebarPnLMetrics();
         }
 
         function handleCapitalSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('cap-id').value;
             const date = document.getElementById('cap-date').value;
-            let amt = parseFloat(document.getElementById('cap-amount').value);
-            const note = document.getElementById('cap-note').value.trim() || 'Manual Broker Capital Refunding';
-
-            if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
+            let amount = parseFloat(document.getElementById('cap-amount').value);
+            const note = document.getElementById('cap-note').value.trim() || 'Capital Allocation injection';
 
             const balances = calculateFinancialBalances();
-            if (!id && (balances.bankAccountBalance - amt < 0)) {
-                if(!confirm("Warning: This injection exceeds bank cash balance parameters. Continue?")) return;
+            const currentDisplayMultiplier = state.settings.currency === 'KHR' ? KHR_MULTIPLIER : 1;
+            
+            if(state.settings.currency === 'KHR') amount = amount / KHR_MULTIPLIER;
+
+            if(!id && balances.bankAccountBalance < amount) {
+                alert(`Insufficient bank treasury resources. Current Bank account holds only: ${formatCurrency(balances.bankAccountBalance)}`);
+                return;
             }
 
             if(id) {
-                const c = state.capital.find(item => item.id === id);
-                if(c) {
-                    const diff = amt - c.amount;
-                    c.date = date; c.amount = amt; c.note = note;
-                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === id);
-                    if(linked) { linked.date = date; linked.amount = amt; linked.note = `[Capital Link Outflow Asset Node] ${note}`; }
-                }
+                const item = state.capital.find(c => c.id === id);
+                const oldCfLink = state.cashflow.find(cf => cf.linkedReferenceId === id);
+                if(item) item.date = date; item.amount = amount; item.note = note;
+                if(oldCfLink) { oldCfLink.date = date; oldCfLink.amount = amount; oldCfLink.note = `[Auto Managed Expense Layer] -> ${note}`; }
             } else {
-                const capId = 'cap-' + Date.now();
-                state.capital.push({ id: capId, date, amount: amt, note });
+                const uniqueId = 'cap-' + Date.now();
+                state.capital.push({ id: uniqueId, date, amount, note });
                 state.cashflow.push({
-                    id: 'cf-link-' + Date.now(), date, type: 'Expense', amount: amt,
-                    note: `[Capital Link Outflow Asset Node] ${note}`, linkedReferenceId: capId, categoryId: null
+                    id: 'cf-auto-link-' + Date.now(),
+                    date,
+                    categoryId: 'cat-def-2', 
+                    type: 'Expense',
+                    amount,
+                    note: `[Auto Managed Expense Layer] -> ${note}`,
+                    linkedReferenceId: uniqueId
                 });
             }
             saveStateToLocalStorage(); resetCapitalForm();
         }
 
         function editCapital(id) {
-            const c = state.capital.find(item => item.id === id); if(!c) return;
-            const displayAmt = state.settings.currency === 'KHR' ? c.amount * KHR_MULTIPLIER : c.amount;
-            document.getElementById('cap-id').value = c.id; document.getElementById('cap-date').value = c.date;
-            document.getElementById('cap-amount').value = displayAmt.toFixed(2); document.getElementById('cap-note').value = c.note || '';
+            const item = state.capital.find(c => c.id === id); if(!item) return;
+            document.getElementById('cap-id').value = item.id; document.getElementById('cap-date').value = item.date;
+            const displayAmt = state.settings.currency === 'KHR' ? item.amount * KHR_MULTIPLIER : item.amount;
+            document.getElementById('cap-amount').value = displayAmt.toFixed(2);
+            document.getElementById('cap-note').value = item.note || '';
             document.getElementById('cap-btn-cancel').classList.remove('hidden');
-            document.getElementById('cap-btn-submit').innerText = "Update Injected Entry";
+            document.getElementById('cap-form-heading').innerText = "Edit Injected Capital Node";
         }
 
         function resetCapitalForm() {
             document.getElementById('capital-form').reset(); document.getElementById('cap-id').value = '';
-            setTodayDatesOnForms(); document.getElementById('cap-btn-cancel').classList.add('hidden');
-            document.getElementById('cap-btn-submit').innerText = "Inject Capital";
+            document.getElementById('cap-btn-cancel').classList.add('hidden');
+            document.getElementById('cap-form-heading').innerText = "Funding Capital (Bank → Trade Account)";
+            setTodayDatesOnForms();
         }
 
         function deleteCapital(id) {
-            if(confirm("Erase capital deployment row? Linked bank outflow records sync automatic updates.")) {
+            if(confirm("Purge capital allocation loop and matching auto cashflow block entry?")) {
                 state.capital = state.capital.filter(c => c.id !== id);
                 state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
                 saveStateToLocalStorage();
@@ -1623,51 +1659,57 @@
             e.preventDefault();
             const id = document.getElementById('wth-id').value;
             const date = document.getElementById('wth-date').value;
-            let amt = parseFloat(document.getElementById('wth-amount').value);
-            const note = document.getElementById('wth-note').value.trim() || 'Broker Revenue Withdrawal Extraction';
-
-            if(state.settings.currency === 'KHR') amt = amt / KHR_MULTIPLIER;
+            let amount = parseFloat(document.getElementById('wth-amount').value);
+            const note = document.getElementById('wth-note').value.trim() || 'Extracted trading withdrawal earnings';
 
             const balances = calculateFinancialBalances();
-            if (!id && (balances.tradingAccountBalance - amt < 0)) {
-                showToast("Operation rejected. Insufficient execution resources inside trading accounts.", "error"); return;
+            if(!id && balances.tradingAccountBalance < amount) {
+                alert(`Insufficient execution ledger balances to support extraction parameters. Max withdrawal possible: ${formatCurrency(balances.tradingAccountBalance)}`);
+                return;
             }
 
+            if(state.settings.currency === 'KHR') amount = amount / KHR_MULTIPLIER;
+
             if(id) {
-                const w = state.withdraw.find(item => item.id === id);
-                if(w) {
-                    w.date = date; w.amount = amt; w.note = note;
-                    const linked = state.cashflow.find(cf => cf.linkedReferenceId === id);
-                    if(linked) { linked.date = date; linked.amount = amt; linked.note = `[Withdrawal Link Inflow Asset Node] ${note}`; }
-                }
+                const item = state.withdraw.find(w => w.id === id);
+                const oldCfLink = state.cashflow.find(cf => cf.linkedReferenceId === id);
+                if(item) { item.date = date; item.amount = amount; item.note = note; }
+                if(oldCfLink) { oldCfLink.date = date; oldCfLink.amount = amount; oldCfLink.note = `[Auto Managed Income Layer] -> ${note}`; }
             } else {
-                const wthId = 'wth-' + Date.now();
-                state.withdraw.push({ id: wthId, date, amount: amt, note });
+                const uniqueId = 'wth-' + Date.now();
+                state.withdraw.push({ id: uniqueId, date, amount, note });
                 state.cashflow.push({
-                    id: 'cf-link-' + Date.now(), date, type: 'Income', amount: amt,
-                    note: `[Withdrawal Link Inflow Asset Node] ${note}`, linkedReferenceId: wthId, categoryId: null
+                    id: 'cf-auto-inc-' + Date.now(),
+                    date,
+                    categoryId: 'cat-def-1', 
+                    type: 'Income',
+                    amount,
+                    note: `[Auto Managed Income Layer] -> ${note}`,
+                    linkedReferenceId: uniqueId
                 });
             }
             saveStateToLocalStorage(); resetWithdrawForm();
         }
 
         function editWithdraw(id) {
-            const w = state.withdraw.find(item => item.id === id); if(!w) return;
-            const displayAmt = state.settings.currency === 'KHR' ? w.amount * KHR_MULTIPLIER : w.amount;
-            document.getElementById('wth-id').value = w.id; document.getElementById('wth-date').value = w.date;
-            document.getElementById('wth-amount').value = displayAmt.toFixed(2); document.getElementById('wth-note').value = w.note || '';
+            const item = state.withdraw.find(w => w.id === id); if(!item) return;
+            document.getElementById('wth-id').value = item.id; document.getElementById('wth-date').value = item.date;
+            const displayAmt = state.settings.currency === 'KHR' ? item.amount * KHR_MULTIPLIER : item.amount;
+            document.getElementById('wth-amount').value = displayAmt.toFixed(2);
+            document.getElementById('wth-note').value = item.note || '';
             document.getElementById('wth-btn-cancel').classList.remove('hidden');
-            document.getElementById('wth-btn-submit').innerText = "Update Extract Request";
+            document.getElementById('wth-form-heading').innerText = "Edit Requested Extraction Record";
         }
 
         function resetWithdrawForm() {
             document.getElementById('withdraw-form').reset(); document.getElementById('wth-id').value = '';
-            setTodayDatesOnForms(); document.getElementById('wth-btn-cancel').classList.add('hidden');
-            document.getElementById('wth-btn-submit').innerText = "Request Withdrawal";
+            document.getElementById('wth-btn-cancel').classList.add('hidden');
+            document.getElementById('wth-form-heading').innerText = "Extract Funds (Trade Account → Bank)";
+            setTodayDatesOnForms();
         }
 
         function deleteWithdraw(id) {
-            if(confirm("Revoke withdrawal? Accompanying transaction records will sync auto-clearing parameters.")) {
+            if(confirm("Purge extraction layer row? Reverse linked income ledger line?")) {
                 state.withdraw = state.withdraw.filter(w => w.id !== id);
                 state.cashflow = state.cashflow.filter(cf => cf.linkedReferenceId !== id);
                 saveStateToLocalStorage();
@@ -1683,130 +1725,127 @@
             [...state.capital].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(c => {
                 capBody.insertAdjacentHTML('beforeend', `<tr class="border-b border-gray-700/20 text-xs">
                     <td class="p-3 font-mono text-gray-400">${c.date}</td>
-                    <td class="p-3 font-bold text-blue-400 font-mono">${formatCurrency(c.amount)}</td>
-                    <td class="p-3 text-gray-400 truncate max-w-[120px]">${c.note}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="editCapital('${c.id}')" class="text-[9px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
-                        <button onclick="deleteCapital('${c.id}')" class="text-[9px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">Delete</button>
+                    <td class="p-3 font-bold text-blue-400">${formatCurrency(c.amount)}</td>
+                    <td class="p-3 text-gray-400 truncate max-w-[100px]">${c.note || '-'}</td>
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <button onclick="editCapital('${c.id}')" class="text-[10px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                        <button onclick="deleteCapital('${c.id}')" class="text-[10px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">X</button>
                     </td>
                 </tr>`);
             });
 
-            wthBody.innerHTML = state.withdraw.length === 0 ? `<tr><td colspan="4" class="p-2 text-center text-gray-500 italic">No extraction loops.</td></tr>` : '';
+            wthBody.innerHTML = state.withdraw.length === 0 ? `<tr><td colspan="4" class="p-2 text-center text-gray-500 italic">No extractions.</td></tr>` : '';
             [...state.withdraw].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(w => {
                 wthBody.insertAdjacentHTML('beforeend', `<tr class="border-b border-gray-700/20 text-xs">
                     <td class="p-3 font-mono text-gray-400">${w.date}</td>
-                    <td class="p-3 font-bold text-purple-400 font-mono">${formatCurrency(w.amount)}</td>
-                    <td class="p-3 text-gray-400 truncate max-w-[120px]">${w.note}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="editWithdraw('${w.id}')" class="text-[9px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
-                        <button onclick="deleteWithdraw('${w.id}')" class="text-[9px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">Delete</button>
+                    <td class="p-3 font-bold text-purple-400">${formatCurrency(w.amount)}</td>
+                    <td class="p-3 text-gray-400 truncate max-w-[100px]">${w.note || '-'}</td>
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <button onclick="editWithdraw('${w.id}')" class="text-[10px] bg-gray-700 text-white px-1.5 py-0.5 rounded cursor-pointer">Edit</button>
+                        <button onclick="deleteWithdraw('${w.id}')" class="text-[10px] bg-red-950 text-red-400 px-1.5 py-0.5 rounded cursor-pointer">X</button>
                     </td>
                 </tr>`);
             });
         }
 
         function renderPerformanceCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            const totalPnLNode = document.getElementById('calendar-total-pnl-node');
-            if(!grid || !totalPnLNode) return;
-
-            const selectedYear = parseInt(document.getElementById('cal-year-select').value);
-            const selectedMonth = parseInt(document.getElementById('cal-month-select').value);
-            if(isNaN(selectedYear) || isNaN(selectedMonth)) return;
+            const grid = document.getElementById('calendar-grid'); if(!grid) return;
+            const targetYear = parseInt(document.getElementById('cal-year-select').value);
+            const targetMonth = parseInt(document.getElementById('cal-month-select').value);
+            if(isNaN(targetYear) || isNaN(targetMonth)) return;
 
             grid.innerHTML = '';
-            
-            const firstDayIndex = new Date(selectedYear, selectedMonth, 1).getDay();
-            const totalDaysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
+            const totalDaysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
 
-            // Structure data mapping dictionary layers
-            let monthlyDayMap = {};
-            let monthlyAggregatedTotalPnL = 0;
-
-            state.trading.forEach(t => {
-                const dObj = new Date(t.date);
-                if(dObj.getFullYear() === selectedYear && dObj.getMonth() === selectedMonth) {
-                    const dayNum = dObj.getDate();
-                    if(!monthlyDayMap[dayNum]) monthlyDayMap[dayNum] = 0;
-                    const amt = parseFloat(t.amount);
-                    monthlyDayMap[dayNum] += (t.outcome === 'Profit' ? amt : -amt);
-                }
-            });
-
-            // Blank spacer day blocks representation mapping alignment
             for(let i = 0; i < firstDayIndex; i++) {
-                grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-800/10 border border-transparent rounded-lg p-1"></div>`);
+                grid.insertAdjacentHTML('beforeend', `<div class="bg-gray-900/20 min-h-[50px] sm:min-h-[65px] rounded-lg"></div>`);
             }
 
-            // Populating absolute real day blocks mapping vectors
-            for(let d = 1; d <= totalDaysInMonth; d++) {
-                const dayPnL = monthlyDayMap[d] || 0;
-                monthlyAggregatedTotalPnL += dayPnL;
-                
-                let performanceCardBgStyle = "bg-gray-800/60 border-gray-700 text-gray-400 hover:bg-gray-700/50";
-                let pnlStringMarkup = '';
+            let calculatedMonthlyPnL = 0;
+            const monthPrefixStr = targetYear + '-' + String(targetMonth + 1).padStart(2, '0');
 
-                if(dayPnL > 0) {
-                    performanceCardBgStyle = "bg-emerald-950/40 border-emerald-800/60 text-emerald-400 hover:bg-emerald-900/30";
-                    pnlStringMarkup = `<span class="text-[9px] sm:text-[10px] font-bold font-mono tracking-tight text-emerald-400 font-bold block mt-1 truncate">+${formatCurrency(dayPnL)}</span>`;
-                } else if(dayPnL < 0) {
-                    performanceCardBgStyle = "bg-red-950/40 border-red-900/50 text-red-400 hover:bg-red-900/30";
-                    pnlStringMarkup = `<span class="text-[9px] sm:text-[10px] font-bold font-mono tracking-tight text-red-400 font-bold block mt-1 truncate">${formatCurrency(dayPnL)}</span>`;
+            for(let day = 1; day <= totalDaysInMonth; day++) {
+                const dayStr = monthPrefixStr + '-' + String(day).padStart(2, '0');
+                const dayTrades = state.trading.filter(t => t.date === dayStr);
+
+                let dayPnL = 0;
+                dayTrades.forEach(t => {
+                    const amt = parseFloat(t.amount);
+                    if(t.outcome === 'Profit') dayPnL += amt; else dayPnL -= amt;
+                });
+
+                calculatedMonthlyPnL += dayPnL;
+                let dayBgColorClass = "bg-gray-800 border-gray-700/50 hover:bg-gray-700/50";
+                let dayTextColorClass = "text-gray-400";
+
+                if (dayTrades.length > 0) {
+                    if (dayPnL > 0) { dayBgColorClass = "bg-emerald-950/70 border-emerald-800/60"; dayTextColorClass = "text-emerald-400 font-bold"; }
+                    else if (dayPnL < 0) { dayBgColorClass = "bg-red-950/70 border-red-900/60"; dayTextColorClass = "text-red-400 font-bold"; }
+                    else { dayBgColorClass = "bg-gray-700 border-gray-600"; dayTextColorClass = "text-white"; }
                 }
 
                 grid.insertAdjacentHTML('beforeend', `
-                    <div class="border rounded-xl p-2 text-left flex flex-col justify-between transition min-h-[100px] sm:min-h-[120px] ${performanceCardBgStyle}">
-                        <span class="text-[10px] sm:text-xs font-mono font-semibold text-gray-500">${d}</span>
-                        <div class="mt-auto">${pnlStringMarkup}</div>
+                    <div class="min-h-[50px] sm:min-h-[65px] border rounded-lg p-1 sm:p-1.5 flex flex-col justify-between transition-all relative group ${dayBgColorClass}">
+                        <span class="text-[10px] font-mono text-gray-500 font-semibold self-start">${day}</span>
+                        <span class="text-[9px] sm:text-[11px] font-mono tracking-tighter truncate ${dayTextColorClass}">
+                            ${dayTrades.length > 0 ? (dayPnL >= 0 ? '+' : '') + formatCurrency(dayPnL) : ''}
+                        </span>
+                        <div class="hidden group-hover:block absolute bg-black/90 border border-gray-700 text-[9px] sm:text-[10px] text-gray-300 p-2 rounded shadow-2xl z-20 left-0 top-full mt-1 min-w-[130px] space-y-1 font-mono">
+                            <div>Date: ${dayStr}</div>
+                            <div>Trades count: ${dayTrades.length}</div>
+                            <div class="${dayPnL >= 0 ? 'text-emerald-400':'text-red-400'}">Net PnL: ${formatCurrency(dayPnL)}</div>
+                        </div>
                     </div>
                 `);
             }
 
-            // Render updated net calculations to global metric node objects
-            totalPnLNode.innerText = formatCurrency(monthlyAggregatedTotalPnL);
-            if (monthlyAggregatedTotalPnL >= 0) {
-                totalPnLNode.className = "text-base sm:text-lg font-bold font-mono text-emerald-400";
-            } else {
-                totalPnLNode.className = "text-base sm:text-lg font-bold font-mono text-red-400";
-            }
+            document.getElementById('calendar-total-pnl-node').innerText = formatCurrency(calculatedMonthlyPnL);
+            document.getElementById('calendar-total-pnl-node').className = `text-base sm:text-lg font-bold font-mono ${calculatedMonthlyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
         }
 
         function renderChartsEngine() {
-            const canvas = document.getElementById('cashflowChart'); if(!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (cashflowChartInstance) cashflowChartInstance.destroy();
+            const ctx = document.getElementById('cashflowChart'); if (!ctx) return;
+            const items = state.cashflow;
+            
+            let dateLabelsGroupingList = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                dateLabelsGroupingList.push(d.toISOString().split('T')[0]);
+            }
 
-            let groupings = {};
-            state.cashflow.forEach(c => {
-                const m = c.date.substring(0, 7); if(!groupings[m]) groupings[m] = { inc: 0, exp: 0 };
-                if (c.type === 'Income') groupings[m].inc += c.amount; else groupings[m].exp += c.amount;
+            let incomeDataVectorArray = Array(7).fill(0);
+            let expenseDataVectorArray = Array(7).fill(0);
+
+            dateLabelsGroupingList.forEach((dateStr, idx) => {
+                const dayItems = items.filter(c => c.date === dateStr);
+                dayItems.forEach(item => {
+                    const val = parseFloat(item.amount);
+                    if (item.type === 'Income') incomeDataVectorArray[idx] += val;
+                    else expenseDataVectorArray[idx] += val;
+                });
+                if(state.settings.currency === 'KHR') {
+                    incomeDataVectorArray[idx] *= KHR_MULTIPLIER;
+                    expenseDataVectorArray[idx] *= KHR_MULTIPLIER;
+                }
             });
 
-            const sortedKeys = Object.keys(groupings).sort().slice(-6);
-            const isKhr = state.settings.currency === 'KHR';
-
-            const datasets = {
-                labels: sortedKeys,
-                income: sortedKeys.map(k => isKhr ? groupings[k].inc * KHR_MULTIPLIER : groupings[k].inc),
-                expense: sortedKeys.map(k => isKhr ? groupings[k].exp * KHR_MULTIPLIER : groupings[k].exp)
-            };
-
+            if (cashflowChartInstance) cashflowChartInstance.destroy();
             cashflowChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: datasets.labels,
+                    labels: dateLabelsGroupingList.map(s => s.substring(5)),
                     datasets: [
-                        { label: 'Income', data: datasets.income, backgroundColor: '#10B981', borderRadius: 4 },
-                        { label: 'Expense', data: datasets.expense, backgroundColor: '#EF4444', borderRadius: 4 }
+                        { label: 'Income', data: incomeDataVectorArray, backgroundColor: '#10B981', borderRadius: 4 },
+                        { label: 'Expense', data: expenseDataVectorArray, backgroundColor: '#EF4444', borderRadius: 4 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#9CA3AF', font: { size: 10 } } } },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
-                        y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF', font: { size: 10 } } }
+                        x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 9 } } },
+                        y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF', font: { size: 9 } } }
                     }
                 }
             });
@@ -1816,23 +1855,133 @@
             document.getElementById('chatbot-window').classList.toggle('hidden');
         }
 
-        function triggerChatbotAnswer(id) {
-            const container = document.getElementById('chatbot-messages');
-            let q = "", a = "";
-            switch (id) {
-                case 1: q = "How do I fix \"Insufficient bank treasury resources\"?"; a = "Isolate cash flow deficits by using the Cash Flow module tab to append high-yield income entries, or bypass alerts by clearing configuration checkboxes inside terminal configurations."; break;
-                case 2: q = "What is the separate file cashflow upload template?"; a = "Bulk loader engines consume precise structural JSON matching standard records mapping arrays containing matching <code>[{ \"date\": \"YYYY-MM-DD\", \"category\": \"Salary\", \"type\": \"Income\", \"amount\": 250, \"note\": \"...\" }]</code> parameters."; break;
-                case 3: q = "How do KHR currency exchange rate evaluations update math?"; a = "The core system executes cross-ledger calculation mappings tracking fixed standard base evaluations multiplied by the KHR index factor ($1.00 USD mapped straight to 4,000 ៛ KHR parameters)."; break;
-                case 4: q = "How do I sync backup data across other systems?"; a = "Execute bulk 'Export Everything' routines inside the primary navbar, capture generated master JSON backup streams, and perform drop file imports directly into the destination system environments."; break;
-                case 5: q = "How do I perform batch purges by Year / Month?"; a = "Navigate inside settings control panes, enter a desired reference day vector anchor into target inputs, and choose the scope parameter (Purge by Day/Month/Year). This resets matched transactional nodes to 0."; break;
-                case 6: q = "What happens if an uploaded JSON object lacks a category?"; a = "The engine rejects undefined file rows to protect structural calculation paths. Every input record strictly requires a matching character category string descriptor parameter."; break;
+        function triggerChatbotAnswer(questionIdx) {
+            const messagesContainer = document.getElementById('chatbot-messages');
+            let userPromptText = "";
+            let betaResponseMarkupText = "";
+
+            if (questionIdx === 1) {
+                userPromptText = "How do I fix \"Insufficient bank treasury resources\"?";
+                betaResponseMarkupText = "This safeguard blocks manual capital injection logs when your calculated <strong>Bank Balance</strong> drops below the allocation target amount. To bypass this parameters boundary, log a standard <code>Income</code> record entry inside the <strong>Cash Flow</strong> window first to fund your treasury reserves baseline.";
+            } else if (questionIdx === 2) {
+                userPromptText = "What is the separate file cashflow upload template?";
+                betaResponseMarkupText = "AlphaLedger accepts structural arrays inside a raw text JSON package formatting configuration. Make sure every line has an explicit description element identifier: <br/><code class='block bg-gray-950 p-1.5 text-[10px] mt-1 text-emerald-400 rounded'>[{ \"date\": \"2026-06-20\", \"category\": \"Food\", \"type\": \"Expense\", \"amount\": 25.50 }]</code>";
+            } else if (questionIdx === 3) {
+                userPromptText = "How do KHR currency exchange rate evaluations update math?";
+                betaResponseMarkupText = "When your accounting currency parameters are set to Cambodian Riel (KHR), inputs are multi-layered with a <code>4,000 ៛ per $1 USD</code> scalar modifier tool matrix. The background ledger database continues tracking in core USD stability values, adjusting displays dynamically across layouts.";
             }
 
-            container.insertAdjacentHTML('beforeend', `<div class="flex gap-2 items-start justify-end"><div class="bg-emerald-600 text-white p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">${q}</div></div>`);
+            messagesContainer.insertAdjacentHTML('beforeend', `
+                <div class="flex gap-2 items-start justify-end">
+                    <div class="bg-emerald-600 text-white p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%] font-medium">${userPromptText}</div>
+                    <div class="p-1 bg-gray-700 text-[9px] rounded-full text-white">👤</div>
+                </div>
+            `);
+
             setTimeout(() => {
-                container.insertAdjacentHTML('beforeend', `<div class="flex gap-2 items-start"><div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div><div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">${a}</div></div>`);
-                container.scrollTop = container.scrollHeight;
+                messagesContainer.insertAdjacentHTML('beforeend', `
+                    <div class="flex gap-2 items-start">
+                        <div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div>
+                        <div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%] shadow-md">
+                            ${betaResponseMarkupText}
+                        </div>
+                    </div>
+                `);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }, 300);
+        }
+
+        // New smart business data query engine module for Beta support agent
+        function askBetaFinancials(queryKey) {
+            const messagesContainer = document.getElementById('chatbot-messages');
+            const bkkToday = getBangkokTodayDateString();
+            const currentYearStr = bkkToday.substring(0, 4);
+            const currentMonthStr = bkkToday.substring(0, 7);
+            
+            const monthNamesList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const activeMonthLabel = monthNamesList[parseInt(bkkToday.split('-')[1]) - 1];
+
+            let userQueryText = "";
+            let botAnswerString = "";
+
+            const balances = calculateFinancialBalances();
+
+            if (queryKey === 'expenses-today') {
+                userQueryText = "What are my expenses today?";
+                const filtered = state.cashflow.filter(c => c.type === 'Expense' && c.date === bkkToday);
+                const sum = filtered.reduce((total, c) => total + parseFloat(c.amount), 0);
+                botAnswerString = `Your total expenses for today <strong>(${bkkToday})</strong> are: <span class="text-red-400 font-bold">${formatCurrency(sum)}</span> across (<strong>${filtered.length}</strong>) transactional records.`;
+            } 
+            else if (queryKey === 'expenses-month') {
+                userQueryText = `What are my expenses for ${activeMonthLabel}?`;
+                const filtered = state.cashflow.filter(c => c.type === 'Expense' && c.date.startsWith(currentMonthStr));
+                const sum = filtered.reduce((total, c) => total + parseFloat(c.amount), 0);
+                botAnswerString = `Your aggregate expenses for the month of <strong>${activeMonthLabel} ${currentYearStr}</strong> equal: <span class="text-red-400 font-bold">${formatCurrency(sum)}</span>.`;
+            } 
+            else if (queryKey === 'expenses-year') {
+                userQueryText = `What are my expenses for ${currentYearStr}?`;
+                const filtered = state.cashflow.filter(c => c.type === 'Expense' && c.date.startsWith(currentYearStr));
+                const sum = filtered.reduce((total, c) => total + parseFloat(c.amount), 0);
+                botAnswerString = `Your absolute calculated expenses logged within year <strong>${currentYearStr}</strong> total: <span class="text-red-400 font-bold">${formatCurrency(sum)}</span>.`;
+            } 
+            else if (queryKey === 'pnl-today') {
+                userQueryText = "What is my trading PnL today?";
+                const filtered = state.trading.filter(t => t.date === bkkToday);
+                let dailyNet = 0;
+                filtered.forEach(t => { if(t.outcome === 'Profit') dailyNet += parseFloat(t.amount); else dailyNet -= parseFloat(t.amount); });
+                const colorClass = dailyNet >= 0 ? 'text-emerald-400' : 'text-red-400';
+                botAnswerString = `Your realized net trading performance outcome for today is: <span class="${colorClass} font-bold">${dailyNet >= 0 ? '+' : ''}${formatCurrency(dailyNet)}</span> (${filtered.length} trades).`;
+            } 
+            else if (queryKey === 'pnl-month') {
+                userQueryText = `What is my trading PnL for ${activeMonthLabel}?`;
+                const filtered = state.trading.filter(t => t.date.startsWith(currentMonthStr));
+                let monthlyNet = 0;
+                filtered.forEach(t => { if(t.outcome === 'Profit') monthlyNet += parseFloat(t.amount); else monthlyNet -= parseFloat(t.amount); });
+                const colorClass = monthlyNet >= 0 ? 'text-emerald-400' : 'text-red-400';
+                botAnswerString = `Your integrated calendar ledger performance metrics calculation loop for <strong>${activeMonthLabel}</strong> yields: <span class="${colorClass} font-bold">${monthlyNet >= 0 ? '+' : ''}${formatCurrency(monthlyNet)}</span>.`;
+            } 
+            else if (queryKey === 'pnl-year') {
+                userQueryText = `What is my trading PnL for ${currentYearStr}?`;
+                const filtered = state.trading.filter(t => t.date.startsWith(currentYearStr));
+                let annualNet = 0;
+                filtered.forEach(t => { if(t.outcome === 'Profit') annualNet += parseFloat(t.amount); else annualNet -= parseFloat(t.amount); });
+                const colorClass = annualNet >= 0 ? 'text-emerald-400' : 'text-red-400';
+                botAnswerString = `Your net execution balance loop summary across year <strong>${currentYearStr}</strong> calculates to: <span class="${colorClass} font-bold">${annualNet >= 0 ? '+' : ''}${formatCurrency(annualNet)}</span>.`;
+            } 
+            else if (queryKey === 'net-worth') {
+                userQueryText = "What is my total net worth?";
+                botAnswerString = `Your live combined dual-ledger calculated net investment evaluation profile is: <span class="text-purple-400 font-bold">${formatCurrency(balances.totalNetWorth)}</span>.`;
+            } 
+            else if (queryKey === 'trading-vol') {
+                userQueryText = "What is my total trading amount?";
+                const sumVolume = state.trading.reduce((total, t) => total + parseFloat(t.amount), 0);
+                botAnswerString = `Your gross cumulative trading amount asset allocation volume tracking index lists: <span class="text-blue-400 font-bold">${formatCurrency(sumVolume)}</span> across a comprehensive group total of (<strong>${state.trading.length}</strong>) individual recorded executions.`;
+            } 
+            else if (queryKey === 'bank-bal') {
+                userQueryText = "What is my total bank balance?";
+                botAnswerString = `Your standard core banking ledger account liquid balance parameters indicate: <span class="text-emerald-400 font-bold">${formatCurrency(balances.bankAccountBalance)}</span>.`;
+            }
+
+            // Append user prompt item container elements
+            messagesContainer.insertAdjacentHTML('beforeend', `
+                <div class="flex gap-2 items-start justify-end">
+                    <div class="bg-gray-700/80 border border-gray-600/40 text-gray-200 p-2 rounded-lg text-[11px] max-w-[85%] font-medium">${userQueryText}</div>
+                    <div class="p-1 bg-gray-700 text-[9px] rounded-full text-white">👤</div>
+                </div>
+            `);
+
+            // Deliver dynamic algorithmic answers matching calculation loop arrays
+            setTimeout(() => {
+                messagesContainer.insertAdjacentHTML('beforeend', `
+                    <div class="flex gap-2 items-start">
+                        <div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div>
+                        <div class="bg-gray-800 border border-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%] shadow-xl">
+                            ${botAnswerString}
+                        </div>
+                    </div>
+                `);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 250);
         }
     </script>
 </body>
