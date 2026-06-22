@@ -18,6 +18,14 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1f2937; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        
+        /* Calculator Grid Styles */
+        .calc-btn {
+            @apply bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-colors cursor-pointer text-sm;
+        }
+        .calc-btn-op {
+            @apply bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition-colors cursor-pointer text-sm;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 transition-colors duration-200 font-sans antialiased text-xs sm:text-sm relative pb-12">
@@ -32,9 +40,14 @@
                 </div>
             </div>
 
-            <button onclick="toggleMobileMenu()" class="md:hidden text-gray-400 hover:text-white focus:outline-none p-2 rounded-lg border border-gray-700 cursor-pointer text-lg" aria-label="Toggle Menu">
-                <span>☰</span>
-            </button>
+            <div class="flex items-center gap-2 md:hidden">
+                <button onclick="toggleBalances()" class="text-gray-400 hover:text-white focus:outline-none p-2 rounded-lg border border-gray-700 cursor-pointer text-sm" title="Toggle Balances">
+                    <span id="eye-icon-mobile">👁️</span>
+                </button>
+                <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white focus:outline-none p-2 rounded-lg border border-gray-700 cursor-pointer text-lg" aria-label="Toggle Menu">
+                    <span>☰</span>
+                </button>
+            </div>
 
             <div id="main-nav" class="hidden w-full md:flex md:w-auto flex-col md:flex-row flex-wrap items-center gap-1.5 mt-2 md:mt-0 transition-all">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full md:w-auto text-left md:text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition active-nav cursor-pointer" data-i18n="tabDashboard">Dashboard</button>
@@ -47,6 +60,9 @@
             </div>
 
             <div id="nav-actions-group" class="hidden md:flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
+                <button onclick="toggleBalances()" class="p-2 border border-gray-700 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-400 hover:text-white transition cursor-pointer" title="Hide/Show Balances">
+                    <span id="eye-icon-desktop">👁️</span>
+                </button>
                 <button onclick="exportData()" class="w-full md:w-auto bg-gray-700 hover:bg-gray-600 text-[11px] sm:text-xs text-white font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer">
                     📤 <span data-i18n="export">Export Everything</span>
                 </button>
@@ -73,6 +89,7 @@
                 <li><strong class="text-emerald-400">Cash Flow:</strong> Standard transactional items (Income/Expense) automatically update your <span class="text-white font-medium">Bank Balance</span>.</li>
                 <li><strong class="text-blue-400">Capital allocations:</strong> Use the <span class="text-white font-medium">Capital & Withdraw</span> module tab to isolate capital loops directly between your bank and your execution trading brokers.</li>
                 <li><strong class="text-purple-400">Data Backups:</strong> Bulk-load master JSON sets inside settings, or use the specialized batch uploader to drop standalone historical cash flow entries directly.</li>
+                <li><strong class="text-amber-400">Privacy Feature:</strong> Toggle balance visibility with the 👁️ icon or physically shake your mobile device to hide/show amounts instantly.</li>
             </ul>
             <div class="mt-2 text-[10px] text-amber-400 font-mono flex items-center gap-1">
                 <span>⏱️</span> <span>This instruction manual bar will auto-dismiss in 5 seconds...</span>
@@ -184,7 +201,7 @@
 
         <section id="tab-cashflow" class="hidden space-y-4 sm:space-y-6">
             <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                         <h3 class="text-sm sm:text-base lg:text-lg font-bold text-white flex items-center gap-2">
                             <span>🛍️</span> <span>Spending Horizon Controller</span>
@@ -659,52 +676,148 @@
         </section>
     </main>
 
-    <div id="chatbot-container" class="fixed bottom-4 right-4 z-50 font-sans">
-        <button onclick="toggleChatbotWindow()" id="chatbot-trigger" class="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-full shadow-2xl transition duration-200 flex items-center justify-center gap-1.5 font-bold tracking-wide text-xs cursor-pointer border border-emerald-400">
-            💬 Ask Beta
+    <div id="floating-actions-container" class="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 font-sans">
+        
+        <button onclick="toggleCalcModal()" class="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-2xl transition duration-200 flex items-center justify-center gap-1.5 font-bold tracking-wide text-xs cursor-pointer border border-blue-400">
+            🧮 Calculator
         </button>
 
-        <div id="chatbot-window" class="hidden w-[310px] sm:w-[380px] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200">
-            <div class="bg-gray-700 p-3 flex justify-between items-center border-b border-gray-600">
-                <div class="flex items-center gap-2">
-                    <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[10px]">🤖</div>
-                    <span class="text-white font-bold text-xs">Support Assistant <span class="text-emerald-400 font-mono text-[10px] px-1 py-0.5 bg-gray-900 rounded">Beta</span></span>
-                </div>
-                <button onclick="toggleChatbotWindow()" class="text-gray-400 hover:text-white text-xs font-bold cursor-pointer">✕</button>
-            </div>
+        <div id="chatbot-container" class="relative">
+            <button onclick="toggleChatbotWindow()" id="chatbot-trigger" class="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-full shadow-2xl transition duration-200 flex items-center justify-center gap-1.5 font-bold tracking-wide text-xs cursor-pointer border border-emerald-400 w-full">
+                💬 Ask Beta
+            </button>
 
-            <div id="chatbot-messages" class="p-3 space-y-2.5 h-[220px] overflow-y-auto bg-gray-900/60 scrollbar">
-                <div class="flex gap-2 items-start">
-                    <div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div>
-                    <div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">
-                        Hello! I am <span class="font-bold text-emerald-400">Beta</span>. Click on any financial metrics inquiry below to check live totals across your active ledgers:
+            <div id="chatbot-window" class="hidden absolute bottom-14 right-0 w-[310px] sm:w-[380px] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200">
+                <div class="bg-gray-700 p-3 flex justify-between items-center border-b border-gray-600">
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[10px]">🤖</div>
+                        <span class="text-white font-bold text-xs">Support Assistant <span class="text-emerald-400 font-mono text-[10px] px-1 py-0.5 bg-gray-900 rounded">Beta</span></span>
+                    </div>
+                    <button onclick="toggleChatbotWindow()" class="text-gray-400 hover:text-white text-xs font-bold cursor-pointer">✕</button>
+                </div>
+
+                <div id="chatbot-messages" class="p-3 space-y-2.5 h-[220px] overflow-y-auto bg-gray-900/60 scrollbar">
+                    <div class="flex gap-2 items-start">
+                        <div class="p-1 bg-emerald-600 text-[9px] rounded-full text-white">🤖</div>
+                        <div class="bg-gray-700 text-gray-200 p-2 rounded-lg text-[11px] leading-relaxed max-w-[85%]">
+                            Hello! I am <span class="font-bold text-emerald-400">Beta</span>. Click on any financial metrics inquiry below to check live totals across your active ledgers:
+                        </div>
                     </div>
                 </div>
+
+                <div class="p-2.5 bg-gray-750 border-t border-gray-700 grid grid-cols-1 gap-1 max-h-[220px] overflow-y-auto">
+                    <div class="text-[9px] text-gray-500 font-mono uppercase tracking-wider px-1 mb-0.5">💰 Live Accounting Inquiries</div>
+                    <div class="grid grid-cols-3 gap-1">
+                        <button onclick="askBetaFinancials('expenses-today')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">💸 Spent Today</button>
+                        <button onclick="askBetaFinancials('expenses-month')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📅 Spent Month</button>
+                        <button onclick="askBetaFinancials('expenses-year')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">🏦 Spent Year</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1">
+                        <button onclick="askBetaFinancials('pnl-today')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📈 PnL Today</button>
+                        <button onclick="askBetaFinancials('pnl-month')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📊 PnL Month</button>
+                        <button onclick="askBetaFinancials('pnl-year')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">💎 PnL Year</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1">
+                        <button onclick="askBetaFinancials('net-worth')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">👑 Total Net Worth</button>
+                        <button onclick="askBetaFinancials('trading-vol')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">⚡ Total Volume</button>
+                        <button onclick="askBetaFinancials('bank-bal')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">🏦 Bank Balance</button>
+                    </div>
+
+                    <div class="text-[9px] text-gray-500 font-mono uppercase tracking-wider px-1 mt-1.5 mb-0.5">❓ System Operations Help</div>
+                    <button onclick="triggerChatbotAnswer(1)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ Insufficient bank treasury resources error?</button>
+                    <button onclick="triggerChatbotAnswer(2)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ Cashflow isolation upload template structure?</button>
+                    <button onclick="triggerChatbotAnswer(3)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ How do KHR exchange conversions compute?</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="calc-modal" class="hidden fixed inset-0 z-[100] bg-black/70 flex items-center justify-center backdrop-blur-sm p-4 transition-all">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col relative">
+            <div class="bg-gray-900 border-b border-gray-700 p-4 flex justify-between items-center">
+                <h3 class="text-white font-bold text-base">🧮 Modern Calculator</h3>
+                <button onclick="toggleCalcModal()" class="text-gray-400 hover:text-white font-bold cursor-pointer">✕</button>
+            </div>
+            
+            <div class="flex border-b border-gray-700 bg-gray-850">
+                <button onclick="switchCalcTab('normal')" id="tab-calc-normal" class="flex-1 py-3 text-xs font-bold text-white border-b-2 border-emerald-500 transition cursor-pointer">Standard</button>
+                <button onclick="switchCalcTab('percent')" id="tab-calc-percent" class="flex-1 py-3 text-xs font-bold text-gray-400 hover:text-white border-b-2 border-transparent transition cursor-pointer">Capital %</button>
             </div>
 
-            <!-- Enhanced smart buttons option parameters list layout panel -->
-            <div class="p-2.5 bg-gray-750 border-t border-gray-700 grid grid-cols-1 gap-1 max-h-[220px] overflow-y-auto">
-                <div class="text-[9px] text-gray-500 font-mono uppercase tracking-wider px-1 mb-0.5">💰 Live Accounting Inquiries</div>
-                <div class="grid grid-cols-3 gap-1">
-                    <button onclick="askBetaFinancials('expenses-today')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">💸 Spent Today</button>
-                    <button onclick="askBetaFinancials('expenses-month')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📅 Spent Month</button>
-                    <button onclick="askBetaFinancials('expenses-year')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">🏦 Spent Year</button>
+            <div id="calc-view-normal" class="p-4 flex flex-col gap-3">
+                <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 text-right">
+                    <div id="calc-display-history" class="text-gray-500 text-[10px] h-4 font-mono mb-1"></div>
+                    <div id="calc-display-main" class="text-white text-2xl font-bold font-mono overflow-x-auto">0</div>
                 </div>
-                <div class="grid grid-cols-3 gap-1">
-                    <button onclick="askBetaFinancials('pnl-today')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📈 PnL Today</button>
-                    <button onclick="askBetaFinancials('pnl-month')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">📊 PnL Month</button>
-                    <button onclick="askBetaFinancials('pnl-year')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">💎 PnL Year</button>
-                </div>
-                <div class="grid grid-cols-3 gap-1">
-                    <button onclick="askBetaFinancials('net-worth')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">👑 Total Net Worth</button>
-                    <button onclick="askBetaFinancials('trading-vol')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">⚡ Total Volume</button>
-                    <button onclick="askBetaFinancials('bank-bal')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">🏦 Bank Balance</button>
-                </div>
+                <div class="grid grid-cols-4 gap-2 mt-2">
+                    <button onclick="calcInput('C')" class="calc-btn text-red-400 col-span-2">AC</button>
+                    <button onclick="calcInput('DEL')" class="calc-btn text-amber-400">DEL</button>
+                    <button onclick="calcInput('/')" class="calc-btn-op text-emerald-300">÷</button>
 
-                <div class="text-[9px] text-gray-500 font-mono uppercase tracking-wider px-1 mt-1.5 mb-0.5">❓ System Operations Help</div>
-                <button onclick="triggerChatbotAnswer(1)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ Insufficient bank treasury resources error?</button>
-                <button onclick="triggerChatbotAnswer(2)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ Cashflow isolation upload template structure?</button>
-                <button onclick="triggerChatbotAnswer(3)" class="w-full text-left bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-400 transition block truncate cursor-pointer">❓ How do KHR exchange conversions compute?</button>
+                    <button onclick="calcInput('7')" class="calc-btn">7</button>
+                    <button onclick="calcInput('8')" class="calc-btn">8</button>
+                    <button onclick="calcInput('9')" class="calc-btn">9</button>
+                    <button onclick="calcInput('*')" class="calc-btn-op text-emerald-300">×</button>
+
+                    <button onclick="calcInput('4')" class="calc-btn">4</button>
+                    <button onclick="calcInput('5')" class="calc-btn">5</button>
+                    <button onclick="calcInput('6')" class="calc-btn">6</button>
+                    <button onclick="calcInput('-')" class="calc-btn-op text-emerald-300">-</button>
+
+                    <button onclick="calcInput('1')" class="calc-btn">1</button>
+                    <button onclick="calcInput('2')" class="calc-btn">2</button>
+                    <button onclick="calcInput('3')" class="calc-btn">3</button>
+                    <button onclick="calcInput('+')" class="calc-btn-op text-emerald-300">+</button>
+
+                    <button onclick="calcInput('0')" class="calc-btn col-span-2">0</button>
+                    <button onclick="calcInput('.')" class="calc-btn">.</button>
+                    <button onclick="calcInput('=')" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3 rounded-lg transition-colors cursor-pointer text-sm">=</button>
+                </div>
+            </div>
+
+            <div id="calc-view-percent" class="hidden p-5 flex flex-col gap-4">
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Total Capital ($)</label>
+                    <input type="number" id="calc-pct-cap" placeholder="e.g. 200" oninput="evalPercentCalc()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-base text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Target Percentage (%)</label>
+                    <div class="relative">
+                        <input type="number" id="calc-pct-val" placeholder="e.g. 20" oninput="evalPercentCalc()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-base text-white focus:outline-none focus:border-blue-500 pr-8">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                    </div>
+                </div>
+                <div class="bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 mt-2 text-center">
+                    <p class="text-[11px] text-blue-400 font-semibold uppercase tracking-wider mb-1">Calculated Amount</p>
+                    <h2 id="calc-pct-result" class="text-3xl font-bold font-mono text-white">$0.00</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW FEATURE: Daily Briefing Modal -->
+    <div id="daily-briefing-modal" class="hidden fixed inset-0 z-[110] bg-black/70 flex items-center justify-center backdrop-blur-sm p-4 transition-all">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col relative">
+            <div class="bg-gray-900 border-b border-gray-700 p-4 flex justify-between items-center">
+                <h3 class="text-white font-bold text-base flex items-center gap-2"><span>👋</span> Today's Briefing</h3>
+                <button onclick="closeDailyBriefing()" class="text-gray-400 hover:text-white font-bold cursor-pointer text-lg">✕</button>
+            </div>
+            
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-gray-400 text-center">A friendly reminder of your active financial snapshot recorded for today.</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-red-950/20 border border-red-900/30 rounded-xl p-3 text-center">
+                        <p class="text-[10px] text-red-400/70 uppercase font-bold tracking-wider mb-1">Spent</p>
+                        <h4 id="briefing-spent" class="text-lg font-bold font-mono text-red-400">$0.00</h4>
+                    </div>
+                    <div class="bg-emerald-950/20 border border-emerald-900/30 rounded-xl p-3 text-center">
+                        <p class="text-[10px] text-emerald-400/70 uppercase font-bold tracking-wider mb-1">Net PnL</p>
+                        <h4 id="briefing-pnl" class="text-lg font-bold font-mono text-emerald-400">$0.00</h4>
+                    </div>
+                </div>
+                <button onclick="closeDailyBriefing()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl transition-colors cursor-pointer text-sm mt-2">
+                    Dismiss
+                </button>
             </div>
         </div>
     </div>
@@ -730,6 +843,8 @@
         let sidebarFilterPeriod = 'day'; 
         let cashflowChartInstance = null;
         let categorySortConfig = { field: null, direction: 'asc' };
+        
+        let balancesHidden = false;
 
         const dictionary = {
             en: {
@@ -784,6 +899,133 @@
             }
         };
 
+        function displayCurrency(valInUSD) {
+            if (balancesHidden) return '*****';
+            return formatCurrency(valInUSD);
+        }
+
+        function toggleBalances() {
+            balancesHidden = !balancesHidden;
+            const iconStr = balancesHidden ? '👁️‍🗨️' : '👁️';
+            document.getElementById('eye-icon-desktop').innerText = iconStr;
+            document.getElementById('eye-icon-mobile').innerText = iconStr;
+            refreshApplicationUiViewEngines();
+        }
+
+        let lastShakeTime = 0;
+        window.addEventListener('devicemotion', (e) => {
+            let acc = e.accelerationIncludingGravity;
+            if (!acc) return;
+            let accelSq = (acc.x * acc.x) + (acc.y * acc.y) + (acc.z * acc.z);
+            if (accelSq > 350) { 
+                let now = Date.now();
+                if (now - lastShakeTime > 1200) { 
+                    toggleBalances();
+                    showToast(balancesHidden ? "Privacy Enabled 🔒" : "Balances Visible 👁️");
+                    lastShakeTime = now;
+                }
+            }
+        });
+
+        let calcCurrentVal = '0';
+        let calcHistory = '';
+
+        function toggleCalcModal() {
+            const el = document.getElementById('calc-modal');
+            el.classList.toggle('hidden');
+        }
+
+        function switchCalcTab(tab) {
+            document.getElementById('calc-view-normal').classList.toggle('hidden', tab !== 'normal');
+            document.getElementById('calc-view-percent').classList.toggle('hidden', tab !== 'percent');
+            
+            const btnNormal = document.getElementById('tab-calc-normal');
+            const btnPercent = document.getElementById('tab-calc-percent');
+
+            if(tab === 'normal') {
+                btnNormal.className = "flex-1 py-3 text-xs font-bold text-white border-b-2 border-emerald-500 transition cursor-pointer";
+                btnPercent.className = "flex-1 py-3 text-xs font-bold text-gray-400 hover:text-white border-b-2 border-transparent transition cursor-pointer";
+            } else {
+                btnNormal.className = "flex-1 py-3 text-xs font-bold text-gray-400 hover:text-white border-b-2 border-transparent transition cursor-pointer";
+                btnPercent.className = "flex-1 py-3 text-xs font-bold text-white border-b-2 border-blue-500 transition cursor-pointer";
+            }
+        }
+
+        function updateCalcDisplay() {
+            document.getElementById('calc-display-main').innerText = calcCurrentVal;
+            document.getElementById('calc-display-history').innerText = calcHistory;
+        }
+
+        function calcInput(val) {
+            if (val === 'C') {
+                calcCurrentVal = '0';
+                calcHistory = '';
+            } else if (val === 'DEL') {
+                calcCurrentVal = calcCurrentVal.length > 1 ? calcCurrentVal.slice(0, -1) : '0';
+            } else if (val === '=') {
+                try {
+                    let safeEvalStr = calcCurrentVal.replace(/×/g, '*').replace(/÷/g, '/');
+                    let result = new Function('return ' + safeEvalStr)();
+                    calcHistory = calcCurrentVal + ' =';
+                    calcCurrentVal = String(Number.isInteger(result) ? result : result.toFixed(4));
+                } catch (e) {
+                    calcCurrentVal = 'Error';
+                }
+            } else {
+                if(val === '*' || val === '/') val = val === '*' ? '×' : '÷';
+                if (calcCurrentVal === '0' || calcCurrentVal === 'Error') {
+                    calcCurrentVal = (val === '.' || val === '+' || val === '-' || val === '×' || val === '÷') ? '0' + val : val;
+                } else {
+                    calcCurrentVal += val;
+                }
+            }
+            updateCalcDisplay();
+        }
+
+        function evalPercentCalc() {
+            let cap = parseFloat(document.getElementById('calc-pct-cap').value);
+            let pct = parseFloat(document.getElementById('calc-pct-val').value);
+            let displayNode = document.getElementById('calc-pct-result');
+            
+            if (!isNaN(cap) && !isNaN(pct)) {
+                let resultingTotal = cap * (pct / 100);
+                displayNode.innerText = "$" + resultingTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else {
+                displayNode.innerText = "$0.00";
+            }
+        }
+
+        // NEW FEATURE: Daily Briefing Modal Logic
+        function showDailyBriefingModal() {
+            const bkkToday = getBangkokTodayDateString();
+            
+            // Calculate Today's Expenses
+            const todayExpenses = state.cashflow.filter(c => c.type === 'Expense' && c.date === bkkToday);
+            const totalSpent = todayExpenses.reduce((sum, c) => sum + parseFloat(c.amount), 0);
+            
+            // Calculate Today's Net PnL
+            const todayTrades = state.trading.filter(t => t.date === bkkToday);
+            let dailyNet = 0;
+            todayTrades.forEach(t => { 
+                if(t.outcome === 'Profit') dailyNet += parseFloat(t.amount); 
+                else dailyNet -= parseFloat(t.amount); 
+            });
+            
+            // Injecting values to the briefing modal
+            document.getElementById('briefing-spent').innerText = formatCurrency(totalSpent);
+            document.getElementById('briefing-pnl').innerText = (dailyNet >= 0 ? '+' : '') + formatCurrency(dailyNet);
+            
+            // Dynamically assign text color for PnL
+            document.getElementById('briefing-pnl').className = `text-lg font-bold font-mono ${dailyNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+            
+            // Reveal the Modal overlay
+            document.getElementById('daily-briefing-modal').classList.remove('hidden');
+        }
+
+        function closeDailyBriefing() {
+            document.getElementById('daily-briefing-modal').classList.add('hidden');
+        }
+
         function showToast(message, type = 'success') {
             const el = document.getElementById('toast');
             el.innerText = message;
@@ -832,6 +1074,11 @@
                     setTimeout(() => banner.style.display = 'none', 500);
                 }
             }, 5000);
+
+            // Pop-up the Daily Briefing exactly 1 second after application load sequence finishes
+            setTimeout(() => {
+                showDailyBriefingModal();
+            }, 1000);
         });
 
         function loadStateFromLocalStorage() {
@@ -1176,9 +1423,9 @@
 
         function refreshApplicationUiViewEngines() {
             const balances = calculateFinancialBalances();
-            document.getElementById('card-bank-bal').innerText = formatCurrency(balances.bankAccountBalance);
-            document.getElementById('card-trade-bal').innerText = formatCurrency(balances.tradingAccountBalance);
-            document.getElementById('card-net-worth').innerText = formatCurrency(balances.totalNetWorth);
+            document.getElementById('card-bank-bal').innerText = displayCurrency(balances.bankAccountBalance);
+            document.getElementById('card-trade-bal').innerText = displayCurrency(balances.tradingAccountBalance);
+            document.getElementById('card-net-worth').innerText = displayCurrency(balances.totalNetWorth);
             applyLanguageSettingsDictionary(); renderAvatarComponentElements(); populateSortedDropdownSelectors();
             renderDashboardTables(); renderCashflow(); renderTrading(); renderCapitalAccountModules(); renderCategories(); renderAssetsTable(); renderSidebarPnLMetrics(); renderPerformanceCalendar();
             renderSpendingHorizonEngine();
@@ -1891,7 +2138,6 @@
             }, 300);
         }
 
-        // New smart business data query engine module for Beta support agent
         function askBetaFinancials(queryKey) {
             const messagesContainer = document.getElementById('chatbot-messages');
             const bkkToday = getBangkokTodayDateString();
@@ -1962,7 +2208,6 @@
                 botAnswerString = `Your standard core banking ledger account liquid balance parameters indicate: <span class="text-emerald-400 font-bold">${formatCurrency(balances.bankAccountBalance)}</span>.`;
             }
 
-            // Append user prompt item container elements
             messagesContainer.insertAdjacentHTML('beforeend', `
                 <div class="flex gap-2 items-start justify-end">
                     <div class="bg-gray-700/80 border border-gray-600/40 text-gray-200 p-2 rounded-lg text-[11px] max-w-[85%] font-medium">${userQueryText}</div>
@@ -1970,7 +2215,6 @@
                 </div>
             `);
 
-            // Deliver dynamic algorithmic answers matching calculation loop arrays
             setTimeout(() => {
                 messagesContainer.insertAdjacentHTML('beforeend', `
                     <div class="flex gap-2 items-start">
