@@ -409,8 +409,8 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
                     <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-white flex items-center gap-2"><span>📅</span> <span data-i18n="calTitle">Trading Performance Analytics Calendar</span></h3>
                     <div class="flex items-center gap-2 self-end sm:self-auto">
-                        <select id="cal-year-select" onchange="renderPerformanceCalendar()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500"></select>
-                        <select id="cal-month-select" onchange="renderPerformanceCalendar()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500">
+                        <select id="cal-year-select" onchange="renderPerformanceCalendar(); renderGuardrailTrackerMatrix();" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500"></select>
+                        <select id="cal-month-select" onchange="renderPerformanceCalendar(); renderGuardrailTrackerMatrix();" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:border-emerald-500">
                             <option value="0">January</option><option value="1">February</option><option value="2">March</option>
                             <option value="3">April</option><option value="4">May</option><option value="5">June</option>
                             <option value="6">July</option><option value="7">August</option><option value="8">September</option>
@@ -430,10 +430,51 @@
                         <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Calendar Month Selection Loop</h4>
                         <p class="text-[11px] text-gray-500 mt-0.5">Aggregated metrics calculation engine of net trading performance matrix profiles.</p>
                     </div>
-                    <div class="bg-gray-900/80 px-6 py-3.5 rounded-xl border border-gray-700 flex items-center gap-4 min-w-[240px] justify-between">
-                        <span class="text-xs uppercase font-mono font-bold tracking-wider text-gray-400">Total Monthly PnL:</span>
-                        <span id="calendar-total-pnl-node" class="text-base sm:text-lg font-bold font-mono text-white">$0.00</span>
+                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        <button onclick="toggleCostEstimatorModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-3 rounded-xl transition-all border border-blue-400 shadow-lg text-[11px] sm:text-xs cursor-pointer">
+                            📊 Target Multi-Year Cost Estimator
+                        </button>
+                        <div class="bg-gray-900/80 px-6 py-3.5 rounded-xl border border-gray-700 flex items-center gap-4 min-w-[240px] justify-between">
+                            <span class="text-xs uppercase font-mono font-bold tracking-wider text-gray-400">Total Monthly PnL:</span>
+                            <span id="calendar-total-pnl-node" class="text-base sm:text-lg font-bold font-mono text-white">$0.00</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-700 pb-3 mb-4 gap-2">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                            <span>🛡️</span> Daily SL / TP Guardrail Target Tracker Matrix
+                        </h3>
+                        <p class="text-[11px] text-gray-400">Log and verify status parameters dynamically matching baseline tiers across the month loop.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button id="guardrail-toggle-btn" onclick="toggleGuardrailMatrixVisibility()" class="bg-emerald-600 hover:bg-emerald-500 font-semibold px-3 py-1.5 rounded-xl transition-all text-[11px] sm:text-xs cursor-pointer text-white shadow-md border border-emerald-400">
+                            👁️ Show Matrix
+                        </button>
+                        <div class="bg-gray-900/80 border border-gray-700 px-3 py-1.5 rounded-lg text-right font-mono text-[11px]">
+                            <span class="text-gray-400 font-sans">Monthly Compliance Score:</span> 
+                            <span id="guardrail-compliance-rate" class="text-emerald-400 font-bold">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="guardrail-matrix-wrapper" class="hidden overflow-x-auto transition-all duration-300">
+                    <table class="w-full text-left text-xs text-gray-300 min-w-[650px]">
+                        <thead class="bg-gray-700/50 font-mono text-[10px] text-gray-400 uppercase">
+                            <tr>
+                                <th class="p-2.5 rounded-l-lg w-[120px]">Target Date</th>
+                                <th class="p-2.5 text-center bg-emerald-950/20 w-[110px]">$10 Tier Status</th>
+                                <th class="p-2.5 text-center bg-blue-950/20 w-[110px]">$14 Tier Status</th>
+                                <th class="p-2.5 text-center bg-purple-950/20 w-[110px]">$20 Tier Status</th>
+                                <th class="p-2.5 text-center bg-amber-950/20 w-[110px]">$27 Tier Status</th>
+                                <th class="p-2.5 rounded-r-lg">Strategic Notes / Guardrail Outcomes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guardrail-matrix-tbody" class="divide-y divide-gray-700/30 font-sans"></tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -795,7 +836,6 @@
         </div>
     </div>
 
-    <!-- NEW FEATURE: Daily Briefing Modal -->
     <div id="daily-briefing-modal" class="hidden fixed inset-0 z-[110] bg-black/70 flex items-center justify-center backdrop-blur-sm p-4 transition-all">
         <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col relative">
             <div class="bg-gray-900 border-b border-gray-700 p-4 flex justify-between items-center">
@@ -822,6 +862,60 @@
         </div>
     </div>
 
+    <div id="cost-estimator-modal" class="hidden fixed inset-0 z-[120] bg-black/70 flex items-center justify-center backdrop-blur-sm p-4 transition-all">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col relative">
+            <div class="bg-gray-900 border-b border-gray-700 p-4 flex justify-between items-center">
+                <h3 class="text-white font-bold text-base flex items-center gap-2"><span>📊</span> Multi-Year TP / SL Cost Projection Engine</h3>
+                <button onclick="toggleCostEstimatorModal()" class="text-gray-400 hover:text-white font-bold cursor-pointer text-lg">✕</button>
+            </div>
+            
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-gray-400">Evaluate theoretical baseline risk thresholds (TP/SL) stacked uniformly month-over-month over a comprehensive 20-year operation horizon.</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Days Per Calendar Month</label>
+                        <select id="est-month-days" onchange="runCostEstimationProjection()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-2 text-xs text-white focus:border-emerald-500">
+                            <option value="30">30 Days (Standard Month)</option>
+                            <option value="31">31 Days (Long Month)</option>
+                            <option value="28">28 Days (February Common)</option>
+                            <option value="29">29 Days (February Leap)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Daily Target Tier Weight</label>
+                        <select id="est-daily-cost" onchange="runCostEstimationProjection()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-2 text-xs text-white focus:border-emerald-500">
+                            <option value="10">$10.00 / Day Baseline Tier</option>
+                            <option value="14">$14.00 / Day Aggressive Tier</option>
+                            <option value="20">$20.00 / Day Premium Tier</option>
+                            <option value="27">$27.00 / Day Maximum Target Tier</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <div class="bg-gray-950 p-3 rounded-xl border border-gray-700/60 text-center">
+                        <p class="text-[9px] font-mono text-gray-500 uppercase tracking-wider mb-0.5">Single Month Cost Matrix</p>
+                        <h4 id="est-res-month" class="text-base font-bold font-mono text-white">$0.00</h4>
+                    </div>
+                    <div class="bg-gray-950 p-3 rounded-xl border border-gray-700/60 text-center">
+                        <p class="text-[9px] font-mono text-gray-500 uppercase tracking-wider mb-0.5">Single Year (12x Month Matrix)</p>
+                        <h4 id="est-res-year" class="text-base font-bold font-mono text-emerald-400">$0.00</h4>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-950/20 border border-emerald-900/40 p-4 rounded-xl text-center">
+                    <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1">🔒 Accumulated Horizon Cost (20-Year Horizon Profile)</p>
+                    <h2 id="est-res-20year" class="text-2xl sm:text-3xl font-bold font-mono text-white">$0.00</h2>
+                </div>
+
+                <button onclick="toggleCostEstimatorModal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-xl transition-colors cursor-pointer text-xs">
+                    Return to Performance Grid
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let state = {
             categories: [],
@@ -830,6 +924,7 @@
             trading: [],
             capital: [],
             withdraw: [],
+            guardrails: {}, // Format: { "YYYY-MM-DD": { t10: "", t14: "", t20: "", t27: "", note: "..." } }
             settings: {
                 lang: 'en',
                 currency: 'USD',
@@ -906,7 +1001,7 @@
 
         function toggleBalances() {
             balancesHidden = !balancesHidden;
-            const iconStr = balancesHidden ? '👁️‍🗨️' : '👁️';
+            const iconStr = balancesHidden ? '👁️‍㶲' : '👁️';
             document.getElementById('eye-icon-desktop').innerText = iconStr;
             document.getElementById('eye-icon-mobile').innerText = iconStr;
             refreshApplicationUiViewEngines();
@@ -995,7 +1090,27 @@
             }
         }
 
-        // NEW FEATURE: Daily Briefing Modal Logic
+        function toggleCostEstimatorModal() {
+            const modal = document.getElementById('cost-estimator-modal');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) {
+                runCostEstimationProjection();
+            }
+        }
+
+        function runCostEstimationProjection() {
+            const days = parseInt(document.getElementById('est-month-days').value) || 30;
+            const dailyCost = parseInt(document.getElementById('est-daily-cost').value) || 10;
+            
+            const monthTotal = days * dailyCost;
+            const yearTotal = monthTotal * 12;
+            const twentyYearTotal = yearTotal * 20;
+            
+            document.getElementById('est-res-month').innerText = formatCurrency(monthTotal);
+            document.getElementById('est-res-year').innerText = formatCurrency(yearTotal);
+            document.getElementById('est-res-20year').innerText = formatCurrency(twentyYearTotal);
+        }
+
         function showDailyBriefingModal() {
             const bkkToday = getBangkokTodayDateString();
             
@@ -1089,6 +1204,7 @@
                     ['categories','assets','cashflow','capital','trading','withdraw'].forEach(key => {
                         if(!Array.isArray(state[key])) state[key] = [];
                     });
+                    if(!state.guardrails) state.guardrails = {};
                     if (!state.settings) state.settings = {};
                     state.settings = Object.assign({
                         lang: 'en',
@@ -1252,7 +1368,9 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     if (parsed.categories && parsed.cashflow && parsed.trading) {
-                        state = parsed; if(!state.assets) state.assets = [];
+                        state = parsed; 
+                        if(!state.assets) state.assets = [];
+                        if(!state.guardrails) state.guardrails = {};
                         saveStateToLocalStorage(); syncSettingsInputFormFields(); showToast("Full backup environment metrics loaded.");
                     }
                 } catch(err) { showToast("Contents read error.", "error"); }
@@ -1347,6 +1465,11 @@
             state.capital = state.capital.filter(item => !matchesHorizon(item.date));
             state.withdraw = state.withdraw.filter(item => !matchesHorizon(item.date));
 
+            // Also clean up guardrails matching timeline
+            for(let key in state.guardrails) {
+                if(matchesHorizon(key)) delete state.guardrails[key];
+            }
+
             saveStateToLocalStorage();
             showToast(`Batch purging operation complete for targeted ${horizon} horizon loop.`);
         }
@@ -1418,7 +1541,10 @@
                 renderChartsEngine();
                 renderSpendingHorizonEngine();
             }
-            if(tabId === 'calendar') renderPerformanceCalendar();
+            if(tabId === 'calendar') {
+                renderPerformanceCalendar();
+                renderGuardrailTrackerMatrix();
+            }
         }
 
         function refreshApplicationUiViewEngines() {
@@ -1428,7 +1554,7 @@
             document.getElementById('card-net-worth').innerText = displayCurrency(balances.totalNetWorth);
             applyLanguageSettingsDictionary(); renderAvatarComponentElements(); populateSortedDropdownSelectors();
             renderDashboardTables(); renderCashflow(); renderTrading(); renderCapitalAccountModules(); renderCategories(); renderAssetsTable(); renderSidebarPnLMetrics(); renderPerformanceCalendar();
-            renderSpendingHorizonEngine();
+            renderSpendingHorizonEngine(); renderGuardrailTrackerMatrix();
         }
 
         function renderSpendingHorizonEngine() {
@@ -2049,6 +2175,122 @@
 
             document.getElementById('calendar-total-pnl-node').innerText = formatCurrency(calculatedMonthlyPnL);
             document.getElementById('calendar-total-pnl-node').className = `text-base sm:text-lg font-bold font-mono ${calculatedMonthlyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+        }
+
+        // Strategy Matrix Compliance Tracker Core Engine
+        function toggleGuardrailMatrixVisibility() {
+            const wrapper = document.getElementById('guardrail-matrix-wrapper');
+            const btn = document.getElementById('guardrail-toggle-btn');
+            const isHidden = wrapper.classList.toggle('hidden');
+            btn.innerText = isHidden ? "👁️ Show Matrix" : "👁️ Hide Matrix";
+        }
+
+        function updateGuardrailMetric(dateStr, keyField, selectedValue) {
+            if(!state.guardrails[dateStr]) {
+                state.guardrails[dateStr] = { t10: "", t14: "", t20: "", t27: "", note: "" };
+            }
+            state.guardrails[dateStr][keyField] = selectedValue;
+            localStorage.setItem('ALPHA_LEDGER_DATA_STORAGE_KEY', JSON.stringify(state));
+            calculateComplianceMetricsRate();
+        }
+
+        function updateGuardrailNote(dateStr, noteVal) {
+            if(!state.guardrails[dateStr]) {
+                state.guardrails[dateStr] = { t10: "", t14: "", t20: "", t27: "", note: "" };
+            }
+            state.guardrails[dateStr].note = noteVal;
+            localStorage.setItem('ALPHA_LEDGER_DATA_STORAGE_KEY', JSON.stringify(state));
+        }
+
+        function calculateComplianceMetricsRate() {
+            const targetYear = parseInt(document.getElementById('cal-year-select').value);
+            const targetMonth = parseInt(document.getElementById('cal-month-select').value);
+            const totalDaysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+            const monthPrefixStr = targetYear + '-' + String(targetMonth + 1).padStart(2, '0');
+
+            let monitoredDays = 0;
+            let totalAmountValue = 0;
+
+            for(let d = 1; d <= totalDaysInMonth; d++) {
+                const dayStr = monthPrefixStr + '-' + String(d).padStart(2, '0');
+                const logged = state.guardrails[dayStr];
+                if(logged) {
+                    if(logged.t10 || logged.t14 || logged.t20 || logged.t27) {
+                        monitoredDays++;
+                        if (logged.t10 === 'TP') totalAmountValue += 10;
+                        if (logged.t14 === 'TP') totalAmountValue += 14;
+                        if (logged.t20 === 'TP') totalAmountValue += 20;
+                        if (logged.t27 === 'TP') totalAmountValue += 27;
+                        
+                        if (logged.t10 === 'SL') totalAmountValue -= 10;
+                        if (logged.t14 === 'SL') totalAmountValue -= 14;
+                        if (logged.t20 === 'SL') totalAmountValue -= 20;
+                        if (logged.t27 === 'SL') totalAmountValue -= 27;
+                    }
+                }
+            }
+            
+            const rateNode = document.getElementById('guardrail-compliance-rate');
+            if(rateNode) {
+                rateNode.innerText = monitoredDays > 0 ? formatCurrency(totalAmountValue) : "$0.00 (No data)";
+            }
+        }
+
+        function renderGuardrailTrackerMatrix() {
+            const tbody = document.getElementById('guardrail-matrix-tbody');
+            if(!tbody) return;
+
+            const targetYear = parseInt(document.getElementById('cal-year-select').value);
+            const targetMonth = parseInt(document.getElementById('cal-month-select').value);
+            if(isNaN(targetYear) || isNaN(targetMonth)) return;
+
+            const totalDaysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+            const monthPrefixStr = targetYear + '-' + String(targetMonth + 1).padStart(2, '0');
+
+            tbody.innerHTML = '';
+
+            for(let day = 1; day <= totalDaysInMonth; day++) {
+                const dayStr = monthPrefixStr + '-' + String(day).padStart(2, '0');
+                const guard = state.guardrails[dayStr] || { t10: "", t14: "", t20: "", t27: "", note: "" };
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b border-gray-700/20 text-xs hover:bg-gray-800/40 transition">
+                        <td class="p-2 font-mono font-medium text-gray-400">${dayStr}</td>
+                        <td class="p-1.5 text-center bg-emerald-950/10">
+                            <select onchange="updateGuardrailMetric('${dayStr}', 't10', this.value)" class="bg-gray-900 border border-gray-700 text-[11px] rounded px-1.5 py-1 text-gray-300 focus:border-emerald-500 w-full cursor-pointer max-w-[85px] mx-auto block">
+                                <option value="">-</option>
+                                <option value="SL" ${guard.t10 === 'SL' ? 'selected':''}>🔴 SL</option>
+                                <option value="TP" ${guard.t10 === 'TP' || guard.t10 === true ? 'selected':''}>🟢 TP</option>
+                            </select>
+                        </td>
+                        <td class="p-1.5 text-center bg-blue-950/10">
+                            <select onchange="updateGuardrailMetric('${dayStr}', 't14', this.value)" class="bg-gray-900 border border-gray-700 text-[11px] rounded px-1.5 py-1 text-gray-300 focus:border-blue-500 w-full cursor-pointer max-w-[85px] mx-auto block">
+                                <option value="">-</option>
+                                <option value="SL" ${guard.t14 === 'SL' ? 'selected':''}>🔴 SL</option>
+                                <option value="TP" ${guard.t14 === 'TP' || guard.t14 === true ? 'selected':''}>🟢 TP</option>
+                            </select>
+                        </td>
+                        <td class="p-1.5 text-center bg-purple-950/10">
+                            <select onchange="updateGuardrailMetric('${dayStr}', 't20', this.value)" class="bg-gray-900 border border-gray-700 text-[11px] rounded px-1.5 py-1 text-gray-300 focus:border-purple-500 w-full cursor-pointer max-w-[85px] mx-auto block">
+                                <option value="">-</option>
+                                <option value="SL" ${guard.t20 === 'SL' ? 'selected':''}>🔴 SL</option>
+                                <option value="TP" ${guard.t20 === 'TP' || guard.t20 === true ? 'selected':''}>🟢 TP</option>
+                            </select>
+                        </td>
+                        <td class="p-1.5 text-center bg-amber-950/10">
+                            <select onchange="updateGuardrailMetric('${dayStr}', 't27', this.value)" class="bg-gray-900 border border-gray-700 text-[11px] rounded px-1.5 py-1 text-gray-300 focus:border-amber-500 w-full cursor-pointer max-w-[85px] mx-auto block">
+                                <option value="">-</option>
+                                <option value="SL" ${guard.t27 === 'SL' ? 'selected':''}>🔴 SL</option>
+                                <option value="TP" ${guard.t27 === 'TP' || guard.t27 === true ? 'selected':''}>🟢 TP</option>
+                            </select>
+                        </td>
+                        <td class="p-2">
+                            <input type="text" placeholder="Add custom notes..." value="${guard.note || ''}" onchange="updateGuardrailNote('${dayStr}', this.value)" class="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-emerald-500">
+                        </td>
+                    </tr>
+                `);
+            }
+            calculateComplianceMetricsRate();
         }
 
         function renderChartsEngine() {
