@@ -299,7 +299,12 @@
 
                 <div class="lg:col-span-3 bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-                        <h3 class="text-sm sm:text-base font-semibold text-white" data-i18n="cfRecordsLedger">Cash Flow Records</h3>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <h3 class="text-sm sm:text-base font-semibold text-white" data-i18n="cfRecordsLedger">Cash Flow Records</h3>
+                            <button onclick="exportCashFlowJSON()" class="bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/30 text-[10px] font-mono px-2.5 py-1 rounded-md transition-all flex items-center gap-1 cursor-pointer shadow-sm">
+                                📋 Export Cash Flow (JSON)
+                            </button>
+                        </div>
                         <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
                             <input type="date" id="filter-cf-start" onchange="renderCashflow()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[11px] text-white">
                             <input type="date" id="filter-cf-end" onchange="renderCashflow()" class="bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[11px] text-white">
@@ -761,7 +766,7 @@
                     <div class="grid grid-cols-3 gap-1">
                         <button onclick="askBetaFinancials('net-worth')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">👑 Total Net Worth</button>
                         <button onclick="askBetaFinancials('trading-vol')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">⚡ Total Volume</button>
-                        <button onclick="askBetaFinancials('bank-bal')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate cursor-pointer">🏦 Bank Balance</button>
+                        <button onclick="askBetaFinancials('bank-bal')" class="bg-gray-850 hover:bg-gray-700 border border-gray-700 rounded p-1.5 text-[10px] text-gray-300 transition text-center truncate truncate cursor-pointer">🏦 Bank Balance</button>
                     </div>
 
                     <div class="text-[9px] text-gray-500 font-mono uppercase tracking-wider px-1 mt-1.5 mb-0.5">❓ System Operations Help</div>
@@ -1359,6 +1364,26 @@
             const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `${state.settings.systemName.replace(/\s+/g, '_')}_MasterBackup.json`);
             document.body.appendChild(dl); dl.click(); dl.remove();
+        }
+
+        function exportCashFlowJSON() {
+            const formattedCashflow = state.cashflow.map(item => {
+                const matchedCategory = state.categories.find(c => c.id === item.categoryId);
+                return {
+                    date: item.date,
+                    category: matchedCategory ? matchedCategory.name : (item.linkedReferenceId ? "Transfer Link" : "Unassigned"),
+                    type: item.type,
+                    amount: parseFloat(parseFloat(item.amount).toFixed(2))
+                };
+            });
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(formattedCashflow, null, 2));
+            const downloadLink = document.createElement('a');
+            downloadLink.setAttribute("href", dataStr);
+            downloadLink.setAttribute("download", `CashFlow_Export_${getBangkokTodayDateString()}.json`);
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            showToast("Cash flow ledger schema exported successfully.");
         }
 
         function importData(event) {
