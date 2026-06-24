@@ -213,12 +213,17 @@
                         </form>
 
                         <div class="mt-5 pt-4 border-t border-slate-200">
-                            <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase mb-1.5">⚡ Bulk Upload Records</label>
-                            <label class="w-full bg-slate-700 hover:bg-slate-600 text-white text-[11px] font-medium py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1">
-                                📄 Upload Cashflow JSON
-                                <input type="file" id="cashflowJsonFile" accept=".json" class="hidden" onchange="importIsolatedCashflowJson(event)">
-                            </label>
-                            <p class="text-[9px] text-slate-500 mt-1">Accepts arrays matching <code>[{date, category, type, amount, note}]</code> metrics.</p>
+                            <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase mb-1.5">⚡ Bulk Cashflow Actions</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <label class="bg-slate-700 hover:bg-slate-600 text-white text-[11px] font-medium py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1">
+                                    📄 Upload Cashflow JSON
+                                    <input type="file" id="cashflowJsonFile" accept=".json" class="hidden" onchange="importIsolatedCashflowJson(event)">
+                                </label>
+                                <button type="button" onclick="exportIsolatedCashflowJson()" class="bg-slate-700 hover:bg-slate-600 text-white text-[11px] font-medium py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1">
+                                    📤 Export as JSON
+                                </button>
+                            </div>
+                            <p class="text-[9px] text-slate-500 mt-1">Accepts and produces arrays matching <code>[{date, category, type, amount}]</code> metrics.</p>
                         </div>
                     </div>
                 </div>
@@ -878,6 +883,23 @@
             const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `${state.settings.systemName.replace(/\s+/g, '_')}_ExpenseBackup.json`);
             document.body.appendChild(dl); dl.click(); dl.remove();
+        }
+
+        function exportIsolatedCashflowJson() {
+            const exportedArray = state.cashflow.map(item => {
+                const cat = state.categories.find(c => c.id === item.categoryId) || { name: 'Unassigned' };
+                return {
+                    date: item.date,
+                    category: cat.name,
+                    type: item.type,
+                    amount: parseFloat(item.amount)
+                };
+            });
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportedArray, null, 2));
+            const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `${state.settings.systemName.replace(/\s+/g, '_')}_CashflowBackup.json`);
+            document.body.appendChild(dl); dl.click(); dl.remove();
+            showToast("Cash Flow data exported successfully.");
         }
 
         function importData(event) {
